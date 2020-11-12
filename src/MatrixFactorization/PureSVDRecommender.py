@@ -6,7 +6,7 @@ Created on 14/06/18
 @author: Maurizio Ferrari Dacrema
 """
 
-from Base.BaseMatrixFactorizationRecommender import BaseMatrixFactorizationRecommender
+from ..Base.BaseMatrixFactorizationRecommender import BaseMatrixFactorizationRecommender
 from sklearn.utils.extmath import randomized_svd
 import scipy.sparse as sps
 import numpy as np
@@ -109,7 +109,7 @@ def compute_W_sparse_from_item_latent_factors(ITEM_factors, topK = 100):
     return W_sparse
 
 
-from Base.BaseSimilarityMatrixRecommender import BaseItemSimilarityMatrixRecommender
+from ..Base.BaseSimilarityMatrixRecommender import BaseItemSimilarityMatrixRecommender
 
 class PureSVDItemRecommender(BaseItemSimilarityMatrixRecommender):
     """ PureSVDItemRecommender

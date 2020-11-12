@@ -6,7 +6,7 @@ Created on 14/12/18
 @author: Maurizio Ferrari Dacrema
 """
 
-from ParameterTuning.SearchAbstractClass import SearchAbstractClass
+from ..ParameterTuning.SearchAbstractClass import SearchAbstractClass
 import traceback
 
 class SearchSingleCase(SearchAbstractClass):

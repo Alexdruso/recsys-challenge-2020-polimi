@@ -9,7 +9,7 @@ Created on 14/12/18
 from skopt import gp_minimize
 from skopt.space import Real, Integer, Categorical
 
-from ParameterTuning.SearchAbstractClass import SearchAbstractClass
+from ..ParameterTuning.SearchAbstractClass import SearchAbstractClass
 import traceback
 
 

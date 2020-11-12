@@ -7,7 +7,7 @@ Created on 30/03/2019
 """
 
 import sys, glob, traceback, os
-from CythonCompiler.run_compile_subprocess import run_compile_subprocess
+from src.CythonCompiler.run_compile_subprocess import run_compile_subprocess
 
 
 if __name__ == '__main__':
@@ -26,9 +26,9 @@ if __name__ == '__main__':
 
     for subfolder_to_compile in subfolder_to_compile_list:
         if subfolder_to_compile == "Cython_examples":
-            cython_file_list.extend(glob.glob('{}/*.pyx'.format(subfolder_to_compile), recursive=True))
+            cython_file_list.extend(glob.glob('src/{}/*.pyx'.format(subfolder_to_compile), recursive=True))
         else:
-            cython_file_list.extend(glob.glob('{}/Cython/*.pyx'.format(subfolder_to_compile), recursive=True))
+            cython_file_list.extend(glob.glob('src/{}/Cython/*.pyx'.format(subfolder_to_compile), recursive=True))
 
 
     print("run_compile_all_cython: Found {} Cython files in {} folders...".format(len(cython_file_list), len(subfolder_to_compile_list)))

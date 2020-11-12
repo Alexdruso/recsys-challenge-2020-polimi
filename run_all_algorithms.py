@@ -1,21 +1,21 @@
 
-from SLIM_BPR.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
-from SLIM_ElasticNet.SLIMElasticNetRecommender import SLIMElasticNetRecommender
+from src.SLIM_BPR.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
+from src.SLIM_ElasticNet.SLIMElasticNetRecommender import SLIMElasticNetRecommender
 
-from MatrixFactorization.Cython.MatrixFactorization_Cython import MatrixFactorization_BPR_Cython, MatrixFactorization_FunkSVD_Cython, MatrixFactorization_AsySVD_Cython
-from MatrixFactorization.PureSVDRecommender import PureSVDRecommender
-from MatrixFactorization.IALSRecommender import IALSRecommender
+from src.MatrixFactorization.Cython.MatrixFactorization_Cython import MatrixFactorization_BPR_Cython, MatrixFactorization_FunkSVD_Cython, MatrixFactorization_AsySVD_Cython
+from src.MatrixFactorization.PureSVDRecommender import PureSVDRecommender
+from src.MatrixFactorization.IALSRecommender import IALSRecommender
 
-from Base.NonPersonalizedRecommender import TopPop, Random, GlobalEffects
+from src.Base.NonPersonalizedRecommender import TopPop, Random, GlobalEffects
 
-from KNN.UserKNNCFRecommender import UserKNNCFRecommender
-from KNN.ItemKNNCFRecommender import ItemKNNCFRecommender
-from KNN.ItemKNNCBFRecommender import ItemKNNCBFRecommender
-from GraphBased.RP3betaRecommender import RP3betaRecommender
-from GraphBased.P3alphaRecommender import P3alphaRecommender
+from src.KNN.UserKNNCFRecommender import UserKNNCFRecommender
+from src.KNN.ItemKNNCFRecommender import ItemKNNCFRecommender
+from src.KNN.ItemKNNCBFRecommender import ItemKNNCBFRecommender
+from src.GraphBased.RP3betaRecommender import RP3betaRecommender
+from src.GraphBased.P3alphaRecommender import P3alphaRecommender
 
-from Data_manager.Movielens10M.Movielens10MReader import Movielens10MReader
-from Data_manager.DataSplitter_leave_k_out import DataSplitter_leave_k_out
+from src.Data_manager.Movielens.Movielens10MReader import Movielens10MReader
+from src.Data_manager.DataSplitter_leave_k_out import DataSplitter_leave_k_out
 
 import traceback, os
 
@@ -48,7 +48,7 @@ if __name__ == '__main__':
     ]
 
 
-    from Base.Evaluation.Evaluator import EvaluatorHoldout
+    from src.Base.Evaluation.Evaluator import EvaluatorHoldout
 
     evaluator = EvaluatorHoldout(URM_test, [5, 20], exclude_seen=True)
 

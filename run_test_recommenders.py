@@ -9,7 +9,7 @@ Created on 22/11/2018
 import traceback, os, shutil
 
 
-from Base.Evaluation.Evaluator import EvaluatorHoldout, EvaluatorNegativeItemSample
+from src.Base.Evaluation.Evaluator import EvaluatorHoldout, EvaluatorNegativeItemSample
 from Data_manager.Movielens.Movielens1MReader import Movielens1MReader
 from Data_manager.DataSplitter_leave_k_out import DataSplitter_leave_k_out
 from Base.Incremental_Training_Early_Stopping import Incremental_Training_Early_Stopping

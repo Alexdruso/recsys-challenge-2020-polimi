@@ -4,11 +4,9 @@ Created on 23/03/2019
 @author: Maurizio Ferrari Dacrema
 """
 
-
-
-from Base.BaseMatrixFactorizationRecommender import BaseMatrixFactorizationRecommender
-from Base.Incremental_Training_Early_Stopping import Incremental_Training_Early_Stopping
-from Base.Recommender_utils import check_matrix
+from ..Base.BaseMatrixFactorizationRecommender import BaseMatrixFactorizationRecommender
+from ..Base.Incremental_Training_Early_Stopping import Incremental_Training_Early_Stopping
+from ..Base.Recommender_utils import check_matrix
 import numpy as np
 
 
@@ -36,13 +34,12 @@ class IALSRecommender(BaseMatrixFactorizationRecommender, Incremental_Training_E
 
     AVAILABLE_CONFIDENCE_SCALING = ["linear", "log"]
 
-
-    def fit(self, epochs = 300,
-            num_factors = 20,
-            confidence_scaling = "linear",
-            alpha = 1.0,
-            epsilon = 1.0,
-            reg = 1e-3,
+    def fit(self, epochs=300,
+            num_factors=20,
+            confidence_scaling="linear",
+            alpha=1.0,
+            epsilon=1.0,
+            reg=1e-3,
             init_mean=0.0,
             init_std=0.1,
             **earlystopping_kwargs):
@@ -60,8 +57,9 @@ class IALSRecommender(BaseMatrixFactorizationRecommender, Incremental_Training_E
         """
 
         if confidence_scaling not in self.AVAILABLE_CONFIDENCE_SCALING:
-           raise ValueError("Value for 'confidence_scaling' not recognized. Acceptable values are {}, provided was '{}'".format(self.AVAILABLE_CONFIDENCE_SCALING, confidence_scaling))
-
+            raise ValueError(
+                "Value for 'confidence_scaling' not recognized. Acceptable values are {}, provided was '{}'".format(
+                    self.AVAILABLE_CONFIDENCE_SCALING, confidence_scaling))
 
         self.num_factors = num_factors
         self.alpha = alpha
@@ -71,9 +69,7 @@ class IALSRecommender(BaseMatrixFactorizationRecommender, Incremental_Training_E
         self.USER_factors = self._init_factors(self.n_users, False)  # don't need values, will compute them
         self.ITEM_factors = self._init_factors(self.n_items)
 
-
         self._build_confidence_matrix(confidence_scaling)
-
 
         warm_user_mask = np.ediff1d(self.URM_train.indptr) > 0
         warm_item_mask = np.ediff1d(self.URM_train.tocsc().indptr) > 0
@@ -86,15 +82,11 @@ class IALSRecommender(BaseMatrixFactorizationRecommender, Incremental_Training_E
         self._update_best_model()
 
         self._train_with_early_stopping(epochs,
-                                        algorithm_name = self.RECOMMENDER_NAME,
+                                        algorithm_name=self.RECOMMENDER_NAME,
                                         **earlystopping_kwargs)
-
 
         self.USER_factors = self.USER_factors_best
         self.ITEM_factors = self.ITEM_factors_best
-
-
-
 
     def _build_confidence_matrix(self, confidence_scaling):
 
@@ -103,36 +95,28 @@ class IALSRecommender(BaseMatrixFactorizationRecommender, Incremental_Training_E
         else:
             self.C = self._log_scaling_confidence()
 
-        self.C_csc= check_matrix(self.C.copy(), format="csc", dtype = np.float32)
-
-
-
+        self.C_csc = check_matrix(self.C.copy(), format="csc", dtype=np.float32)
 
     def _linear_scaling_confidence(self):
 
-        C = check_matrix(self.URM_train, format="csr", dtype = np.float32)
-        C.data = 1.0 + self.alpha*C.data
+        C = check_matrix(self.URM_train, format="csr", dtype=np.float32)
+        C.data = 1.0 + self.alpha * C.data
 
         return C
 
     def _log_scaling_confidence(self):
 
-        C = check_matrix(self.URM_train, format="csr", dtype = np.float32)
+        C = check_matrix(self.URM_train, format="csr", dtype=np.float32)
         C.data = 1.0 + self.alpha * np.log(1.0 + C.data / self.epsilon)
 
         return C
 
-
-
-
     def _prepare_model_for_validation(self):
         pass
-
 
     def _update_best_model(self):
         self.USER_factors_best = self.USER_factors.copy()
         self.ITEM_factors_best = self.ITEM_factors.copy()
-
 
     def _run_epoch(self, num_epoch):
 
@@ -156,7 +140,6 @@ class IALSRecommender(BaseMatrixFactorizationRecommender, Incremental_Training_E
         UU = self.USER_factors.T.dot(self.USER_factors)
 
         for item_id in self.warm_items:
-
             start_pos = self.C_csc.indptr[item_id]
             end_pos = self.C_csc.indptr[item_id + 1]
 
@@ -164,8 +147,6 @@ class IALSRecommender(BaseMatrixFactorizationRecommender, Incremental_Training_E
             item_confidence = self.C_csc.data[start_pos:end_pos]
 
             self.ITEM_factors[item_id, :] = self._update_row(item_profile, item_confidence, self.USER_factors, UU)
-
-
 
     def _update_row(self, interaction_profile, interaction_confidence, Y, YtY):
         """
@@ -200,14 +181,10 @@ class IALSRecommender(BaseMatrixFactorizationRecommender, Incremental_Training_E
 
         return np.dot(np.linalg.inv(B), Y_interactions.T.dot(interaction_confidence))
 
-
     def _init_factors(self, num_factors, assign_values=True):
 
         if assign_values:
-            return self.num_factors**-0.5*np.random.random_sample((num_factors, self.num_factors))
+            return self.num_factors ** -0.5 * np.random.random_sample((num_factors, self.num_factors))
 
         else:
             return np.empty((num_factors, self.num_factors))
-
-
-

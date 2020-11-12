@@ -6,7 +6,7 @@ Created on 14/06/18
 @author: Maurizio Ferrari Dacrema
 """
 
-from Base.BaseMatrixFactorizationRecommender import BaseMatrixFactorizationRecommender
+from ..Base.BaseMatrixFactorizationRecommender import BaseMatrixFactorizationRecommender
 from sklearn.decomposition import NMF
 import scipy.sparse as sps
 

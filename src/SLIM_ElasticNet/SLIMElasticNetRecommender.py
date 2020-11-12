@@ -7,12 +7,12 @@
 
 import numpy as np
 import scipy.sparse as sps
-from Base.Recommender_utils import check_matrix
+from ..Base.Recommender_utils import check_matrix
 from sklearn.linear_model import ElasticNet
 from sklearn.exceptions import ConvergenceWarning
 
-from Base.BaseSimilarityMatrixRecommender import BaseItemSimilarityMatrixRecommender
-from Utils.seconds_to_biggest_unit import seconds_to_biggest_unit
+from ..Base.BaseSimilarityMatrixRecommender import BaseItemSimilarityMatrixRecommender
+from ..Utils.seconds_to_biggest_unit import seconds_to_biggest_unit
 import time, sys, warnings
 
 

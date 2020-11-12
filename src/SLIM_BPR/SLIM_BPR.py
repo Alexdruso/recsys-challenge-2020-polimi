@@ -12,7 +12,7 @@ import time
 import numpy as np
 from scipy.special import expit
 
-from Base.BaseRecommender import BaseRecommender
+from ..Base.BaseRecommender import BaseRecommender
 
 
 class SLIM_BPR(BaseRecommender):

@@ -7,9 +7,9 @@ Created on 10/03/2018
 """
 
 import time, os, traceback
-from Base.Incremental_Training_Early_Stopping import Incremental_Training_Early_Stopping
+from ..Base.Incremental_Training_Early_Stopping import Incremental_Training_Early_Stopping
 import numpy as np
-from Base.DataIO import DataIO
+from ..Base.DataIO import DataIO
 
 class SearchInputRecommenderArgs(object):
 

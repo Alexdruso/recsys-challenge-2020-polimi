@@ -15,7 +15,7 @@ Created on 07/09/17
 
 #defining NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 
-from Base.Recommender_utils import check_matrix
+from ...Base.Recommender_utils import check_matrix
 
 import cython
 

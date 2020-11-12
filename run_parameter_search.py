@@ -6,15 +6,15 @@ Created on 22/11/17
 @author: Maurizio Ferrari Dacrema
 """
 
-from Base.NonPersonalizedRecommender import TopPop, Random
-from KNN.UserKNNCFRecommender import UserKNNCFRecommender
-from KNN.ItemKNNCFRecommender import ItemKNNCFRecommender
-from SLIM_BPR.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
-from SLIM_ElasticNet.SLIMElasticNetRecommender import SLIMElasticNetRecommender
-from GraphBased.P3alphaRecommender import P3alphaRecommender
-from GraphBased.RP3betaRecommender import RP3betaRecommender
-from MatrixFactorization.Cython.MatrixFactorization_Cython import MatrixFactorization_BPR_Cython, MatrixFactorization_FunkSVD_Cython
-from MatrixFactorization.PureSVDRecommender import PureSVDRecommender
+from src.Base.NonPersonalizedRecommender import TopPop, Random
+from src.KNN.UserKNNCFRecommender import UserKNNCFRecommender
+from src.KNN.ItemKNNCFRecommender import ItemKNNCFRecommender
+from src.SLIM_BPR.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
+from src.SLIM_ElasticNet.SLIMElasticNetRecommender import SLIMElasticNetRecommender
+from src.GraphBased.P3alphaRecommender import P3alphaRecommender
+from src.GraphBased.RP3betaRecommender import RP3betaRecommender
+from src.MatrixFactorization.Cython.MatrixFactorization_Cython import MatrixFactorization_BPR_Cython, MatrixFactorization_FunkSVD_Cython
+from src.MatrixFactorization.PureSVDRecommender import PureSVDRecommender
 
 import traceback
 
@@ -23,10 +23,10 @@ from functools import partial
 
 
 
-from Data_manager.Movielens.Movielens10MReader import Movielens10MReader
-from Data_manager.split_functions.split_train_validation_random_holdout import split_train_in_two_percentage_global_sample
+from src.Data_manager.Movielens.Movielens10MReader import Movielens10MReader
+from src.Data_manager.split_functions.split_train_validation_random_holdout import split_train_in_two_percentage_global_sample
 
-from ParameterTuning.run_parameter_search import runParameterSearch_Collaborative
+from src.ParameterTuning.run_parameter_search import runParameterSearch_Collaborative
 
 
 def read_data_split_and_search():
@@ -79,7 +79,7 @@ def read_data_split_and_search():
 
 
 
-    from Base.Evaluation.Evaluator import EvaluatorHoldout
+    from src.Base.Evaluation.Evaluator import EvaluatorHoldout
 
     evaluator_validation = EvaluatorHoldout(URM_validation, cutoff_list=[5])
     evaluator_test = EvaluatorHoldout(URM_test, cutoff_list=[5, 10])
