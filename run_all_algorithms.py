@@ -1,8 +1,8 @@
-
 from src.SLIM_BPR.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
 from src.SLIM_ElasticNet.SLIMElasticNetRecommender import SLIMElasticNetRecommender
 
-from src.MatrixFactorization.Cython.MatrixFactorization_Cython import MatrixFactorization_BPR_Cython, MatrixFactorization_FunkSVD_Cython, MatrixFactorization_AsySVD_Cython
+from src.MatrixFactorization.Cython.MatrixFactorization_Cython import MatrixFactorization_BPR_Cython, \
+    MatrixFactorization_FunkSVD_Cython, MatrixFactorization_AsySVD_Cython
 from src.MatrixFactorization.PureSVDRecommender import PureSVDRecommender
 from src.MatrixFactorization.IALSRecommender import IALSRecommender
 
@@ -19,9 +19,7 @@ from src.Data_manager.DataSplitter_leave_k_out import DataSplitter_leave_k_out
 
 import traceback, os
 
-
 if __name__ == '__main__':
-
 
     dataset_object = Movielens10MReader()
 
@@ -47,11 +45,9 @@ if __name__ == '__main__':
         IALSRecommender,
     ]
 
-
     from src.Base.Evaluation.Evaluator import EvaluatorHoldout
 
     evaluator = EvaluatorHoldout(URM_test, [5, 20], exclude_seen=True)
-
 
     output_root_path = "./result_experiments/"
 
@@ -59,16 +55,13 @@ if __name__ == '__main__':
     if not os.path.exists(output_root_path):
         os.makedirs(output_root_path)
 
-
     logFile = open(output_root_path + "result_all_algorithms.txt", "a")
-
 
     for recommender_class in recommender_list:
 
         try:
 
             print("Algorithm: {}".format(recommender_class))
-
 
             recommender = recommender_class(URM_train)
             recommender.fit()

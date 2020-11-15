@@ -21,9 +21,11 @@ import time
 import sys
 from collections import defaultdict
 
+
 class MatrixFactorization_BPR_Theano(object):
 
-    def __init__(self, rank, n_users, n_items, lambda_u = 0.0025, lambda_i = 0.0025, lambda_j = 0.00025, lambda_bias = 0.0, learning_rate = 0.05):
+    def __init__(self, rank, n_users, n_items, lambda_u=0.0025, lambda_i=0.0025, lambda_j=0.00025, lambda_bias=0.0,
+                 learning_rate=0.05):
         """
           Creates a new object for training and testing a Bayesian
           Personalised Ranking (BPR) Matrix Factorisation 
@@ -97,8 +99,8 @@ class MatrixFactorization_BPR_Theano(object):
         """
         theano.config.mode = 'FAST_RUN'
         theano.config.floatX = 'float32'
-        theano.config.exception_verbosity='high'
-        #theano.config.optimizer = 'None'
+        theano.config.exception_verbosity = 'high'
+        # theano.config.optimizer = 'None'
 
     def _generate_train_model_function(self):
         """
@@ -164,26 +166,30 @@ class MatrixFactorization_BPR_Theano(object):
           descent for the batch.
         """
         if len(train_data) < batch_size:
-            sys.stderr.write("WARNING: Batch size is greater than number of training samples, switching to a batch size of %s\n" % str(len(train_data)))
+            sys.stderr.write(
+                "WARNING: Batch size is greater than number of training samples, switching to a batch size of %s\n" % str(
+                    len(train_data)))
             batch_size = len(train_data)
         self.train_dict, self.train_users, self.train_items = self._data_to_dict(train_data)
         n_sgd_samples = len(train_data) * epochs
         sgd_users, sgd_pos_items, sgd_neg_items = self._uniform_user_sampling(n_sgd_samples)
         z = 0
         t2 = t1 = t0 = time.time()
-        while (z+1)*batch_size < n_sgd_samples:
+        while (z + 1) * batch_size < n_sgd_samples:
             self.train_model(
-                sgd_users[z*batch_size: (z+1)*batch_size],
-                sgd_pos_items[z*batch_size: (z+1)*batch_size],
-                sgd_neg_items[z*batch_size: (z+1)*batch_size]
+                sgd_users[z * batch_size: (z + 1) * batch_size],
+                sgd_pos_items[z * batch_size: (z + 1) * batch_size],
+                sgd_neg_items[z * batch_size: (z + 1) * batch_size]
             )
             z += 1
             t2 = time.time()
-            sys.stderr.write("\rProcessed %s ( %.2f%% ) in %.4f seconds\n" %(str(z*batch_size), 100.0 * float(z*batch_size)/n_sgd_samples, t2 - t1))
+            sys.stderr.write("\rProcessed %s ( %.2f%% ) in %.4f seconds\n" % (
+            str(z * batch_size), 100.0 * float(z * batch_size) / n_sgd_samples, t2 - t1))
             sys.stderr.flush()
             t1 = t2
         if n_sgd_samples > 0:
-            sys.stderr.write("\nTotal training time %.2f seconds; %e per sample\n" % (t2 - t0, (t2 - t0)/n_sgd_samples))
+            sys.stderr.write(
+                "\nTotal training time %.2f seconds; %e per sample\n" % (t2 - t0, (t2 - t0) / n_sgd_samples))
             sys.stderr.flush()
 
     def _uniform_user_sampling(self, n_samples):
@@ -194,7 +200,8 @@ class MatrixFactorization_BPR_Theano(object):
           user sample.
         """
         sys.stderr.write("Generating %s random training samples\n" % str(n_samples))
-        sgd_users = numpy.array(list(self.train_users))[numpy.random.randint(len(list(self.train_users)), size=n_samples)]
+        sgd_users = numpy.array(list(self.train_users))[
+            numpy.random.randint(len(list(self.train_users)), size=n_samples)]
         sgd_pos_items, sgd_neg_items = [], []
         for sgd_user in sgd_users:
             pos_item = self.train_dict[sgd_user][numpy.random.randint(len(self.train_dict[sgd_user]))]
@@ -214,7 +221,7 @@ class MatrixFactorization_BPR_Theano(object):
         w = self.W.get_value()
         h = self.H.get_value()
         b = self.B.get_value()
-        user_vector = w[user_index,:]
+        user_vector = w[user_index, :]
         return user_vector.dot(h.T) + b
 
     def prediction(self, user_index, item_index):
@@ -232,10 +239,10 @@ class MatrixFactorization_BPR_Theano(object):
           This won't return any of the items associated with `user_index`
           in the training set.
         """
-        return [ 
-            item_index for item_index in numpy.argsort(self.predictions(user_index)) 
-            if item_index not in self.train_dict[user_index]
-        ][::-1][:topn]
+        return [
+                   item_index for item_index in numpy.argsort(self.predictions(user_index))
+                   if item_index not in self.train_dict[user_index]
+               ][::-1][:topn]
 
     def test(self, test_data):
         """

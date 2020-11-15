@@ -11,15 +11,12 @@ from scipy import stats
 
 np.random.seed(12345678)
 
-rvs1 = stats.norm.rvs(loc=5,scale=10,size=500)
-rvs2 = stats.norm.rvs(loc=5,scale=10,size=500)
+rvs1 = stats.norm.rvs(loc=5, scale=10, size=500)
+rvs2 = stats.norm.rvs(loc=5, scale=10, size=500)
 
 from ...Base.Evaluation.k_fold_significance_test import compute_k_fold_significance
 
-
 compute_k_fold_significance(rvs1, rvs2)
-
-
 
 #
 # t_statistic, p_value = stats.ttest_ind(rvs1,rvs2)

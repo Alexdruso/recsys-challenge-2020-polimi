@@ -13,9 +13,8 @@ import scipy.sparse as sps
 
 class Compute_Similarity_Euclidean:
 
-
-    def __init__(self, dataMatrix, topK=100, shrink = 0, normalize=False, normalize_avg_row=False,
-                 similarity_from_distance_mode ="lin", row_weights = None, **args):
+    def __init__(self, dataMatrix, topK=100, shrink=0, normalize=False, normalize_avg_row=False,
+                 similarity_from_distance_mode="lin", row_weights=None, **args):
         """
         Computes the euclidean similarity on the columns of dataMatrix
         If it is computed on URM=|users|x|items|, pass the URM as is.
@@ -57,15 +56,14 @@ class Compute_Similarity_Euclidean:
                              " Allowed values are: 'exp', 'lin', 'log'."
                              " Passed value was '{}'".format(similarity_from_distance_mode))
 
-
-
         self.use_row_weights = False
 
         if row_weights is not None:
 
             if dataMatrix.shape[0] != len(row_weights):
-                raise ValueError("Compute_Similarity_Euclidean: provided row_weights and dataMatrix have different number of rows."
-                                 "row_weights has {} rows, dataMatrix has {}.".format(len(row_weights), dataMatrix.shape[0]))
+                raise ValueError(
+                    "Compute_Similarity_Euclidean: provided row_weights and dataMatrix have different number of rows."
+                    "row_weights has {} rows, dataMatrix has {}.".format(len(row_weights), dataMatrix.shape[0]))
 
             self.use_row_weights = True
             self.row_weights = row_weights.copy()
@@ -73,14 +71,7 @@ class Compute_Similarity_Euclidean:
 
             self.dataMatrix_weighted = self.dataMatrix.T.dot(self.row_weights_diag).T
 
-
-
-
-
-
-
-
-    def compute_similarity(self, start_col=None, end_col=None, block_size = 100):
+    def compute_similarity(self, start_col=None, end_col=None, block_size=100):
         """
         Compute the similarity for the given dataset
         :param self:
@@ -97,16 +88,15 @@ class Compute_Similarity_Euclidean:
         start_time_print_batch = start_time
         processedItems = 0
 
-
-        #self.dataMatrix = self.dataMatrix.toarray()
+        # self.dataMatrix = self.dataMatrix.toarray()
 
         start_col_local = 0
         end_col_local = self.n_columns
 
-        if start_col is not None and start_col>0 and start_col<self.n_columns:
+        if start_col is not None and start_col > 0 and start_col < self.n_columns:
             start_col_local = start_col
 
-        if end_col is not None and end_col>start_col_local and end_col<self.n_columns:
+        if end_col is not None and end_col > start_col_local and end_col < self.n_columns:
             end_col_local = end_col
 
         # Compute sum of squared values
@@ -124,19 +114,19 @@ class Compute_Similarity_Euclidean:
             processedItems += this_block_size
 
             end_col_block = min(start_col_block + block_size, end_col_local)
-            this_block_size = end_col_block-start_col_block
+            this_block_size = end_col_block - start_col_block
 
-            if time.time() - start_time_print_batch >= 30 or end_col_block==end_col_local:
+            if time.time() - start_time_print_batch >= 30 or end_col_block == end_col_local:
                 columnPerSec = processedItems / (time.time() - start_time + 1e-9)
 
                 print("Similarity column {} ( {:2.0f} % ), {:.2f} column/sec, elapsed time {:.2f} min".format(
-                    processedItems, processedItems / (end_col_local - start_col_local) * 100, columnPerSec, (time.time() - start_time)/ 60))
+                    processedItems, processedItems / (end_col_local - start_col_local) * 100, columnPerSec,
+                                    (time.time() - start_time) / 60))
 
                 sys.stdout.flush()
                 sys.stderr.flush()
 
                 start_time_print_batch = time.time()
-
 
             # All data points for a given item
             item_data = self.dataMatrix[:, start_col_block:end_col_block]
@@ -153,15 +143,12 @@ class Compute_Similarity_Euclidean:
                 # Compute item similarities
                 this_block_weights = self.dataMatrix.T.dot(item_data)
 
-
-
             for col_index_in_block in range(this_block_size):
 
                 if this_block_size == 1:
                     this_column_weights = this_block_weights
                 else:
-                    this_column_weights = this_block_weights[:,col_index_in_block]
-
+                    this_column_weights = this_block_weights[:, col_index_in_block]
 
                 columnIndex = col_index_in_block + start_col_block
 
@@ -176,13 +163,11 @@ class Compute_Similarity_Euclidean:
 
                 item_distance[columnIndex] = 0.0
 
-
                 if self.use_row_weights:
                     item_distance = np.multiply(item_distance, self.row_weights)
 
-
                 if self.normalize:
-                    item_distance /=  sumOfSquared[columnIndex] * sumOfSquared
+                    item_distance /= sumOfSquared[columnIndex] * sumOfSquared
 
                 if self.normalize_avg_row:
                     item_distance /= self.n_rows
@@ -190,30 +175,27 @@ class Compute_Similarity_Euclidean:
                 item_distance = np.sqrt(item_distance)
 
                 if self.similarity_is_exp:
-                    item_similarity = 1/(np.exp(item_distance) + self.shrink + 1e-9)
+                    item_similarity = 1 / (np.exp(item_distance) + self.shrink + 1e-9)
 
                 elif self.similarity_is_lin:
-                    item_similarity = 1/(item_distance + self.shrink + 1e-9)
+                    item_similarity = 1 / (item_distance + self.shrink + 1e-9)
 
                 elif self.similarity_is_log:
-                    item_similarity = 1/(np.log(item_distance+1) + self.shrink + 1e-9)
+                    item_similarity = 1 / (np.log(item_distance + 1) + self.shrink + 1e-9)
 
                 else:
                     assert False
 
-
                 item_similarity[columnIndex] = 0.0
 
                 this_column_weights = item_similarity
-
-
 
                 # Sort indices and select TopK
                 # Sorting is done in three steps. Faster then plain np.argsort for higher number of items
                 # - Partition the data to extract the set of relevant items
                 # - Sort only the relevant items
                 # - Get the original item index
-                relevant_items_partition = (-this_column_weights).argpartition(self.TopK-1)[0:self.TopK]
+                relevant_items_partition = (-this_column_weights).argpartition(self.TopK - 1)[0:self.TopK]
                 relevant_items_partition_sorting = np.argsort(-this_column_weights[relevant_items_partition])
                 top_k_idx = relevant_items_partition[relevant_items_partition_sorting]
 
@@ -225,9 +207,7 @@ class Compute_Similarity_Euclidean:
                 rows.extend(top_k_idx[notZerosMask])
                 cols.extend(np.ones(numNotZeros) * columnIndex)
 
-
             start_col_block += block_size
-
 
         # End while on columns
 

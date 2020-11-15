@@ -23,21 +23,17 @@ from data.Movielens_20m.Movielens20MReader import Movielens20MReader
 from data.NetflixPrize.NetflixPrizeReader import NetflixPrizeReader
 from data.ThirtyMusic.ThirtyMusicReader import ThirtyMusicReader
 
-
 from data.DataSplitter import DataSplitter_Warm
 import traceback
 
 
-def read_split_for_data_reader(dataReader_class, force_new_split = False):
-
+def read_split_for_data_reader(dataReader_class, force_new_split=False):
     dataReader = dataReader_class()
     dataSplitter = DataSplitter_Warm(dataReader_class, ICM_to_load=None, force_new_split=force_new_split)
 
     URM_train = dataSplitter.get_URM_train()
     URM_validation = dataSplitter.get_URM_validation()
     URM_test = dataSplitter.get_URM_test()
-
-
 
 
 dataReader_list = [
@@ -60,12 +56,11 @@ dataReader_list = [
 
 test_list = []
 
-
 for dataReader_class in dataReader_list:
 
     try:
 
-        read_split_for_data_reader(dataReader_class, force_new_split = False)
+        read_split_for_data_reader(dataReader_class, force_new_split=False)
 
         print("Test for: {} - OK".format(dataReader_class))
         test_list.append((dataReader_class, "OK"))
@@ -79,7 +74,7 @@ for dataReader_class in dataReader_list:
 
         try:
 
-            read_split_for_data_reader(dataReader_class, force_new_split = True)
+            read_split_for_data_reader(dataReader_class, force_new_split=True)
 
             print("Test for: {} - OK".format(dataReader_class))
             test_list.append((dataReader_class, "OK"))
@@ -92,13 +87,7 @@ for dataReader_class in dataReader_list:
             print("Test for: {} - FAIL".format(dataReader_class))
             test_list.append((dataReader_class, "FAIL"))
 
-
-
-
-
-
 print("\n\n\n\nSUMMARY:")
 
 for dataReader_class, outcome in test_list:
-
     print("Test for: {} - {}".format(dataReader_class, outcome))

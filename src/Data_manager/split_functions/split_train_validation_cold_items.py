@@ -11,9 +11,7 @@ import scipy.sparse as sps
 from Data_manager.IncrementalSparseMatrix import IncrementalSparseMatrix
 
 
-
-
-def _select_train_warm_items(URM_all, train_item_percentage, train_interaction_percentage = None):
+def _select_train_warm_items(URM_all, train_item_percentage, train_interaction_percentage=None):
     """
     Selects a certain percentage of the URM_all WARM items and splits the URM in two
     IMPORTANT: the number of items to be sampled is not computed with respect to the shape of the URM but with respect
@@ -32,13 +30,12 @@ def _select_train_warm_items(URM_all, train_item_percentage, train_interaction_p
     URM = sps.csc_matrix(URM_all)
     item_interactions = np.ediff1d(URM.indptr)
 
-    n_warm_items = np.sum(item_interactions>0)
+    n_warm_items = np.sum(item_interactions > 0)
 
     n_train_items = int(n_warm_items * train_item_percentage)
 
-    indices_for_sampling = np.arange(0, URM_all.shape[1], dtype=np.int)[item_interactions>0]
+    indices_for_sampling = np.arange(0, URM_all.shape[1], dtype=np.int)[item_interactions > 0]
     np.random.shuffle(indices_for_sampling)
-
 
     while not terminate:
 
@@ -52,9 +49,9 @@ def _select_train_warm_items(URM_all, train_item_percentage, train_interaction_p
 
             train_interactions = np.sum(item_interactions[train_items])
 
-            current_train_interaction_percentage = train_interactions/n_interactions
+            current_train_interaction_percentage = train_interactions / n_interactions
 
-            if current_train_interaction_percentage < train_interaction_percentage*0.9:
+            if current_train_interaction_percentage < train_interaction_percentage * 0.9:
                 # Too few interactions in train, add items
                 if n_train_items == n_warm_items:
                     terminate = True
@@ -62,7 +59,7 @@ def _select_train_warm_items(URM_all, train_item_percentage, train_interaction_p
                 else:
                     n_train_items += 1
 
-            elif current_train_interaction_percentage > train_interaction_percentage*1.1:
+            elif current_train_interaction_percentage > train_interaction_percentage * 1.1:
                 # Too many interactions in train, remove items
                 if n_train_items == 1:
                     terminate = True
@@ -78,38 +75,32 @@ def _select_train_warm_items(URM_all, train_item_percentage, train_interaction_p
             terminate = True
             sample_successful = True
 
-
     assert sample_successful, "Unable to select the train items with the desired specifications"
-
-
 
     return train_items
 
 
-
-def _zero_out_values(sparse_matrix, columns_to_zero = None, rows_to_zero = None):
-
+def _zero_out_values(sparse_matrix, columns_to_zero=None, rows_to_zero=None):
     if rows_to_zero is not None:
         sparse_matrix = sps.csr_matrix(sparse_matrix)
 
         for n_row in rows_to_zero:
             start_pos = sparse_matrix.indptr[n_row]
-            end_pos = sparse_matrix.indptr[n_row+1]
+            end_pos = sparse_matrix.indptr[n_row + 1]
 
             sparse_matrix.data[start_pos:end_pos] = np.zeros_like(sparse_matrix.data[start_pos:end_pos])
 
         sparse_matrix.eliminate_zeros()
 
     if columns_to_zero is not None:
-        sparse_matrix = _zero_out_values(sparse_matrix.T, rows_to_zero = columns_to_zero).T
+        sparse_matrix = _zero_out_values(sparse_matrix.T, rows_to_zero=columns_to_zero).T
 
     sparse_matrix = sps.csr_matrix(sparse_matrix)
 
     return sparse_matrix
 
 
-
-def split_train_in_two_cold_items(URM_all, ICM_list = None, train_item_percentage = 0.1, train_interaction_percentage = None):
+def split_train_in_two_cold_items(URM_all, ICM_list=None, train_item_percentage=0.1, train_interaction_percentage=None):
     """
     The function splits an URM in two matrices selecting the number of interactions one user at a time
     :param URM_train:
@@ -118,21 +109,23 @@ def split_train_in_two_cold_items(URM_all, ICM_list = None, train_item_percentag
     :return:
     """
 
-    assert train_item_percentage >= 0.0 and train_item_percentage<=1.0, "train_item_percentage must be a value between 0.0 and 1.0, provided was '{}'".format(train_item_percentage)
+    assert train_item_percentage >= 0.0 and train_item_percentage <= 1.0, "train_item_percentage must be a value between 0.0 and 1.0, provided was '{}'".format(
+        train_item_percentage)
 
     # Use CSC for item-wise split
     URM_all = sps.csc_matrix(URM_all)
 
     n_users, n_items = URM_all.shape
 
-    train_items = _select_train_warm_items(URM_all, train_item_percentage, train_interaction_percentage = train_interaction_percentage)
+    train_items = _select_train_warm_items(URM_all, train_item_percentage,
+                                           train_interaction_percentage=train_interaction_percentage)
 
     validation_items_mask = np.ones(n_items, dtype=np.bool)
     validation_items_mask[train_items] = False
-    validation_items = np.arange(0, n_items, dtype = np.int)[validation_items_mask]
+    validation_items = np.arange(0, n_items, dtype=np.int)[validation_items_mask]
 
-    URM_train = _zero_out_values(URM_all.copy(), columns_to_zero = validation_items)
-    URM_validation = _zero_out_values(URM_all.copy(), columns_to_zero = train_items)
+    URM_train = _zero_out_values(URM_all.copy(), columns_to_zero=validation_items)
+    URM_validation = _zero_out_values(URM_all.copy(), columns_to_zero=train_items)
 
     if ICM_list is not None:
 
@@ -140,8 +133,8 @@ def split_train_in_two_cold_items(URM_all, ICM_list = None, train_item_percentag
         ICM_valiation_list = []
 
         for ICM_object in ICM_list:
-            ICM_object_train = _zero_out_values(ICM_object.copy(), rows_to_zero = validation_items)
-            ICM_object_validation = _zero_out_values(ICM_object.copy(), rows_to_zero = train_items)
+            ICM_object_train = _zero_out_values(ICM_object.copy(), rows_to_zero=validation_items)
+            ICM_object_validation = _zero_out_values(ICM_object.copy(), rows_to_zero=train_items)
 
             ICM_train_list.append(ICM_object_train)
             ICM_valiation_list.append(ICM_object_validation)
@@ -150,5 +143,3 @@ def split_train_in_two_cold_items(URM_all, ICM_list = None, train_item_percentag
 
     else:
         return URM_train, URM_validation, train_items
-
-

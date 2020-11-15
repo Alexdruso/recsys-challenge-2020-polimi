@@ -12,8 +12,8 @@ import scipy.sparse as sps
 from ...Base.Similarity.Compute_Similarity_Python import Compute_Similarity_Python
 from ...Base.Similarity.Compute_Similarity_Euclidean import Compute_Similarity_Euclidean
 
-
 from enum import Enum
+
 
 class SimilarityFunction(Enum):
     COSINE = "cosine"
@@ -24,12 +24,9 @@ class SimilarityFunction(Enum):
     EUCLIDEAN = "euclidean"
 
 
-
-
 class Compute_Similarity:
 
-
-    def __init__(self, dataMatrix, use_implementation = "density", similarity = None, **args):
+    def __init__(self, dataMatrix, use_implementation="density", similarity=None, **args):
         """
         Interface object that will call the appropriate similarity implementation
         :param dataMatrix:
@@ -41,7 +38,8 @@ class Compute_Similarity:
         """
 
         assert np.all(np.isfinite(dataMatrix.data)), \
-            "Compute_Similarity: Data matrix contains {} non finite values".format(np.sum(np.logical_not(np.isfinite(dataMatrix.data))))
+            "Compute_Similarity: Data matrix contains {} non finite values".format(
+                np.sum(np.logical_not(np.isfinite(dataMatrix.data))))
 
         self.dense = False
 
@@ -51,14 +49,13 @@ class Compute_Similarity:
 
         else:
 
-            assert not (dataMatrix.shape[0] == 1 and dataMatrix.nnz == dataMatrix.shape[1]),\
+            assert not (dataMatrix.shape[0] == 1 and dataMatrix.nnz == dataMatrix.shape[1]), \
                 "Compute_Similarity: data has only 1 feature (shape: {}) with dense values," \
                 " vector and set based similarities are not defined on 1-dimensional dense data," \
                 " use Euclidean similarity instead.".format(dataMatrix.shape)
 
             if similarity is not None:
                 args["similarity"] = similarity
-
 
             if use_implementation == "density":
 
@@ -68,9 +65,9 @@ class Compute_Similarity:
                 elif isinstance(dataMatrix, sps.spmatrix):
                     shape = dataMatrix.shape
 
-                    num_cells = shape[0]*shape[1]
+                    num_cells = shape[0] * shape[1]
 
-                    sparsity = dataMatrix.nnz/num_cells
+                    sparsity = dataMatrix.nnz / num_cells
 
                     self.dense = sparsity > 0.5
 
@@ -84,14 +81,10 @@ class Compute_Similarity:
                 else:
                     use_implementation = "cython"
 
-
-
-
-
             if use_implementation == "cython":
 
                 try:
-                    from Base.Similarity.Cython.Compute_Similarity_Cython import Compute_Similarity_Cython
+                    from ...Base.Similarity.Cython.Compute_Similarity_Cython import Compute_Similarity_Cython
                     self.compute_similarity_object = Compute_Similarity_Cython(dataMatrix, **args)
 
                 except ImportError:
@@ -104,16 +97,11 @@ class Compute_Similarity:
 
             else:
 
-                raise  ValueError("Compute_Similarity: value for argument 'use_implementation' not recognized")
+                raise ValueError("Compute_Similarity: value for argument 'use_implementation' not recognized")
 
-
-
-
-
-    def compute_similarity(self,  **args):
+    def compute_similarity(self, **args):
 
         return self.compute_similarity_object.compute_similarity(**args)
-
 
 #
 #

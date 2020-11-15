@@ -6,19 +6,17 @@ Created on 09/01/18
 @author: Maurizio Ferrari Dacrema
 """
 
-
 import re
 from nltk.stem import PorterStemmer
 
 import nltk
-nltk.download('stopwords')
 
+nltk.download('stopwords')
 
 from nltk.corpus import stopwords
 
 
 def tagFilter(originalTag):
-
     # Remove non alphabetical character and split on spaces
     processedTag = re.sub("[^a-zA-Z0-9]", " ", originalTag)
     processedTag = re.sub(" +", " ", processedTag)
@@ -37,10 +35,7 @@ def tagFilter(originalTag):
     return result
 
 
-
-
 def tagFilterAndStemming(originalTag):
-
     if len(originalTag) == 0:
         return []
 
@@ -60,7 +55,7 @@ def tagFilterAndStemming(originalTag):
 
         tag_stemmed = stemmer.stem(tag)
 
-        if tag_stemmed not in stopwords_set and len(tag_stemmed)>0:
+        if tag_stemmed not in stopwords_set and len(tag_stemmed) > 0:
             result.append(tag_stemmed)
 
     return result

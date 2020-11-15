@@ -8,15 +8,18 @@ Created on 06/01/2018
 
 import subprocess, os, sys, shutil
 
-def run_compile_subprocess(file_subfolder, file_to_compile_list):
 
+def run_compile_subprocess(file_subfolder, file_to_compile_list):
     # Run compile script setting the working directory to ensure the compiled file are contained in the
     # appropriate subfolder and not the project root
 
     current_python_path = sys.executable
 
-    compile_script_absolute_path = os.getcwd() + '/CythonCompiler/compile_script.py'
-    file_subfolder_absolute_path = os.getcwd() + "/" + file_subfolder
+    compile_script_absolute_path = os.getcwd() + '\src\CythonCompiler\compile_script.py'
+    file_subfolder_absolute_path = os.getcwd() + '\src\ ' + file_subfolder
+
+    print(compile_script_absolute_path)
+    print(file_to_compile_list)
 
     for file_to_compile in file_to_compile_list:
 
@@ -31,7 +34,6 @@ def run_compile_subprocess(file_subfolder, file_to_compile_list):
             output = subprocess.check_output(' '.join(command),
                                              shell=True,
                                              cwd=file_subfolder_absolute_path)
-
 
             try:
 
@@ -52,7 +54,6 @@ def run_compile_subprocess(file_subfolder, file_to_compile_list):
         finally:
             # Removing temporary "build" subfolder
             shutil.rmtree(file_subfolder_absolute_path + "/build", ignore_errors=True)
-
 
     # Command to run compilation script
     # python CythonCompiler/compile_script.py filename.pyx build_ext --inplace

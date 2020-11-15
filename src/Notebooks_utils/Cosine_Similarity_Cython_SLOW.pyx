@@ -1,4 +1,3 @@
-
 import time
 
 import numpy as np
@@ -7,9 +6,7 @@ from cpython.array cimport array, clone
 
 import scipy.sparse as sps
 
-
 cdef class Cosine_Similarity:
-
     def __init__(self, URM, TopK = 100):
         """
         Dataset must be a matrix with items as columns
@@ -34,17 +31,13 @@ cdef class Cosine_Similarity:
         self.item_to_user_data = np.array(URM.data, dtype=np.float64)
 
         if self.TopK == 0:
-            self.W_dense = np.zeros((self.n_items,self.n_items))
-
-
+            self.W_dense = np.zeros((self.n_items, self.n_items))
 
     def getUsersThatRatedItem(self, item_id):
-        return self.item_to_user_rows[self.item_to_user_col_ptr[item_id]:self.item_to_user_col_ptr[item_id+1]]
+        return self.item_to_user_rows[self.item_to_user_col_ptr[item_id]:self.item_to_user_col_ptr[item_id + 1]]
 
     def getItemsRatedByUser(self, user_id):
-        return self.user_to_item_cols[self.user_to_item_row_ptr[user_id]:self.user_to_item_row_ptr[user_id+1]]
-
-
+        return self.user_to_item_cols[self.user_to_item_row_ptr[user_id]:self.user_to_item_row_ptr[user_id + 1]]
 
     def computeItemSimilarities(self, item_id_input):
         """
@@ -76,14 +69,13 @@ cdef class Cosine_Similarity:
         # Create template used to initialize an array with zeros
         result = np.zeros(self.n_items)
 
-
         users_that_rated_item = self.getUsersThatRatedItem(item_id_input)
 
         # Get users that rated the items
         for user_index in range(len(users_that_rated_item)):
 
             user_id = users_that_rated_item[user_index]
-            rating_item_input = self.item_to_user_data[self.item_to_user_col_ptr[item_id_input]+user_index]
+            rating_item_input = self.item_to_user_data[self.item_to_user_col_ptr[item_id_input] + user_index]
 
             # Get all items rated by that user
             items_rated_by_user = self.getItemsRatedByUser(user_id)
@@ -95,24 +87,22 @@ cdef class Cosine_Similarity:
                 # Do not compute the similarity on the diagonal
                 if item_id_second != item_id_input:
                     # Increment similairty
-                    rating_item_second = self.user_to_item_data[self.user_to_item_row_ptr[user_id]+item_index]
+                    rating_item_second = self.user_to_item_data[self.user_to_item_row_ptr[user_id] + item_index]
 
-                    result[item_id_second] += rating_item_input*rating_item_second
+                    result[item_id_second] += rating_item_input * rating_item_second
 
         return result
-
 
     def compute_similarity(self):
 
         # Data structure to incrementally build sparse matrix
         # Preinitialize max possible length
-        values = np.zeros((self.n_items*self.TopK))
-        rows = np.zeros((self.n_items*self.TopK,), dtype=np.int32)
-        cols = np.zeros((self.n_items*self.TopK,), dtype=np.int32)
+        values = np.zeros((self.n_items * self.TopK))
+        rows = np.zeros((self.n_items * self.TopK,), dtype=np.int32)
+        cols = np.zeros((self.n_items * self.TopK,), dtype=np.int32)
         sparse_data_pointer = 0
 
         processedItems = 0
-
 
         start_time = time.time()
 
@@ -121,19 +111,19 @@ cdef class Cosine_Similarity:
 
             processedItems += 1
 
-            if processedItems % 10000==0 or processedItems==self.n_items:
-
-                itemPerSec = processedItems/(time.time()-start_time)
+            if processedItems % 10000 == 0 or processedItems == self.n_items:
+                itemPerSec = processedItems / (time.time() - start_time)
 
                 print("Similarity item {} ( {:2.0f} % ), {:.2f} item/sec, required time {:.2f} min".format(
-                    processedItems, processedItems*1.0/self.n_items*100, itemPerSec, (self.n_items-processedItems) / itemPerSec / 60))
+                    processedItems, processedItems * 1.0 / self.n_items * 100, itemPerSec,
+                                    (self.n_items - processedItems) / itemPerSec / 60))
 
             this_item_weights = self.computeItemSimilarities(itemIndex)
 
             if self.TopK == 0:
 
                 for innerItemIndex in range(self.n_items):
-                    self.W_dense[innerItemIndex,itemIndex] = this_item_weights[innerItemIndex]
+                    self.W_dense[innerItemIndex, itemIndex] = this_item_weights[innerItemIndex]
 
             else:
 
@@ -150,17 +140,14 @@ cdef class Cosine_Similarity:
                 this_item_weights_np = - np.array(this_item_weights)
 
                 # Get the unordered set of topK items
-                top_k_partition = np.argpartition(this_item_weights_np, self.TopK-1)[0:self.TopK]
+                top_k_partition = np.argpartition(this_item_weights_np, self.TopK - 1)[0:self.TopK]
                 # Sort only the elements in the partition
                 top_k_partition_sorting = np.argsort(this_item_weights_np[top_k_partition])
                 # Get original index
                 top_k_idx = top_k_partition[top_k_partition_sorting]
 
-
-
                 # Incrementally build sparse matrix
                 for innerItemIndex in range(len(top_k_idx)):
-
                     topKItemIndex = top_k_idx[innerItemIndex]
 
                     values[sparse_data_pointer] = this_item_weights[topKItemIndex]
@@ -168,7 +155,6 @@ cdef class Cosine_Similarity:
                     cols[sparse_data_pointer] = itemIndex
 
                     sparse_data_pointer += 1
-
 
         if self.TopK == 0:
 
@@ -181,9 +167,7 @@ cdef class Cosine_Similarity:
             cols = np.array(cols[0:sparse_data_pointer])
 
             W_sparse = sps.csr_matrix((values, (rows, cols)),
-                                    shape=(self.n_items, self.n_items),
-                                    dtype=np.float32)
+                                      shape=(self.n_items, self.n_items),
+                                      dtype=np.float32)
 
             return W_sparse
-
-

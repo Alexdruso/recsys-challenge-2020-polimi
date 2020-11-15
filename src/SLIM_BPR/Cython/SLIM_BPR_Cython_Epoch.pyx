@@ -1420,6 +1420,3 @@ cdef class Triangular_Matrix:
         indptr.append(len(data))
 
         return sps.csr_matrix((data, indices, indptr), shape=(self.num_rows, self.num_cols))
-
-
-

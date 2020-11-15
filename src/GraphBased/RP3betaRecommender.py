@@ -13,19 +13,20 @@ from ..Base.Recommender_utils import check_matrix, similarityMatrixTopK
 from ..Base.BaseSimilarityMatrixRecommender import BaseItemSimilarityMatrixRecommender
 import time, sys
 
+
 class RP3betaRecommender(BaseItemSimilarityMatrixRecommender):
     """ RP3beta recommender """
 
     RECOMMENDER_NAME = "RP3betaRecommender"
 
-    def __init__(self, URM_train, verbose = True):
-        super(RP3betaRecommender, self).__init__(URM_train, verbose = verbose)
-
+    def __init__(self, URM_train, verbose=True):
+        super(RP3betaRecommender, self).__init__(URM_train, verbose=verbose)
 
     def __str__(self):
-        return "RP3beta(alpha={}, beta={}, min_rating={}, topk={}, implicit={}, normalize_similarity={})".format(self.alpha,
-                                                                                        self.beta, self.min_rating, self.topK,
-                                                                                        self.implicit, self.normalize_similarity)
+        return "RP3beta(alpha={}, beta={}, min_rating={}, topk={}, implicit={}, normalize_similarity={})".format(
+            self.alpha,
+            self.beta, self.min_rating, self.topK,
+            self.implicit, self.normalize_similarity)
 
     def fit(self, alpha=1., beta=0.6, min_rating=0, topK=100, implicit=False, normalize_similarity=True):
 
@@ -36,7 +37,6 @@ class RP3betaRecommender(BaseItemSimilarityMatrixRecommender):
         self.implicit = implicit
         self.normalize_similarity = normalize_similarity
 
-        
         # if X.dtype != np.float32:
         #     print("RP3beta fit: For memory usage reasons, we suggest to use np.float32 as dtype for the dataset")
 
@@ -46,10 +46,10 @@ class RP3betaRecommender(BaseItemSimilarityMatrixRecommender):
             if self.implicit:
                 self.URM_train.data = np.ones(self.URM_train.data.size, dtype=np.float32)
 
-        #Pui is the row-normalized urm
+        # Pui is the row-normalized urm
         Pui = normalize(self.URM_train, norm='l1', axis=1)
 
-        #Piu is the column-normalized, "boolean" urm transposed
+        # Piu is the column-normalized, "boolean" urm transposed
         X_bool = self.URM_train.transpose(copy=True)
         X_bool.data = np.ones(X_bool.data.size, np.float32)
 
@@ -59,13 +59,13 @@ class RP3betaRecommender(BaseItemSimilarityMatrixRecommender):
 
         degree = np.zeros(self.URM_train.shape[1])
 
-        nonZeroMask = X_bool_sum!=0.0
+        nonZeroMask = X_bool_sum != 0.0
 
         degree[nonZeroMask] = np.power(X_bool_sum[nonZeroMask], -self.beta)
 
-        #ATTENTION: axis is still 1 because i transposed before the normalization
+        # ATTENTION: axis is still 1 because i transposed before the normalization
         Piu = normalize(X_bool, norm='l1', axis=1)
-        del(X_bool)
+        del (X_bool)
 
         # Alfa power
         if self.alpha != 1.:
@@ -77,7 +77,6 @@ class RP3betaRecommender(BaseItemSimilarityMatrixRecommender):
         block_dim = 200
         d_t = Piu
 
-
         # Use array as it reduces memory requirements compared to lists
         dataBlock = 10000000
 
@@ -86,7 +85,6 @@ class RP3betaRecommender(BaseItemSimilarityMatrixRecommender):
         values = np.zeros(dataBlock, dtype=np.float32)
 
         numCells = 0
-
 
         start_time = time.time()
         start_time_printBatch = start_time
@@ -117,13 +115,11 @@ class RP3betaRecommender(BaseItemSimilarityMatrixRecommender):
                         cols = np.concatenate((cols, np.zeros(dataBlock, dtype=np.int32)))
                         values = np.concatenate((values, np.zeros(dataBlock, dtype=np.float32)))
 
-
                     rows[numCells] = current_block_start_row + row_in_block
                     cols[numCells] = cols_to_add[index]
                     values[numCells] = values_to_add[index]
 
                     numCells += 1
-
 
             if time.time() - start_time_printBatch > 60:
                 self._print("Processed {} ( {:.2f}% ) in {:.2f} minutes. Rows per second: {:.0f}".format(
@@ -137,15 +133,13 @@ class RP3betaRecommender(BaseItemSimilarityMatrixRecommender):
 
                 start_time_printBatch = time.time()
 
-
-        self.W_sparse = sps.csr_matrix((values[:numCells], (rows[:numCells], cols[:numCells])), shape=(Pui.shape[1], Pui.shape[1]))
+        self.W_sparse = sps.csr_matrix((values[:numCells], (rows[:numCells], cols[:numCells])),
+                                       shape=(Pui.shape[1], Pui.shape[1]))
 
         if self.normalize_similarity:
             self.W_sparse = normalize(self.W_sparse, norm='l1', axis=1)
 
-
         if self.topK != False:
             self.W_sparse = similarityMatrixTopK(self.W_sparse, k=self.topK)
-
 
         self.W_sparse = check_matrix(self.W_sparse, format='csr')

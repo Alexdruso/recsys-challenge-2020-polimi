@@ -9,7 +9,6 @@ Created on 30/03/2019
 import sys, glob, traceback, os
 from src.CythonCompiler.run_compile_subprocess import run_compile_subprocess
 
-
 if __name__ == '__main__':
 
     # cython_file_list = glob.glob('**/*.pyx', recursive=True)
@@ -21,7 +20,6 @@ if __name__ == '__main__':
         "SLIM_BPR",
     ]
 
-
     cython_file_list = []
 
     for subfolder_to_compile in subfolder_to_compile_list:
@@ -30,10 +28,10 @@ if __name__ == '__main__':
         else:
             cython_file_list.extend(glob.glob('src/{}/Cython/*.pyx'.format(subfolder_to_compile), recursive=True))
 
-
-    print("run_compile_all_cython: Found {} Cython files in {} folders...".format(len(cython_file_list), len(subfolder_to_compile_list)))
-    print("run_compile_all_cython: All files will be compiled using your current python environment: '{}'".format(sys.executable))
-
+    print("run_compile_all_cython: Found {} Cython files in {} folders...".format(len(cython_file_list),
+                                                                                  len(subfolder_to_compile_list)))
+    print("run_compile_all_cython: All files will be compiled using your current python environment: '{}'".format(
+        sys.executable))
 
     save_folder_path = "./result_experiments/"
     log_file_path = save_folder_path + "run_compile_all_cython.txt"
@@ -41,7 +39,6 @@ if __name__ == '__main__':
     # If directory does not exist, create
     if not os.path.exists(save_folder_path):
         os.makedirs(save_folder_path)
-
 
     log_file = open(log_file_path, "w")
 
@@ -54,8 +51,7 @@ if __name__ == '__main__':
         file_name = file_path[-1]
         file_path = "/".join(file_path[:-1]) + "/"
 
-
-        log_string = "Compiling [{}/{}]: {}... ".format(file_index+1, len(cython_file_list), file_name)
+        log_string = "Compiling [{}/{}]: {}... ".format(file_index + 1, len(cython_file_list), file_name)
         print(log_string)
 
         try:
@@ -74,7 +70,6 @@ if __name__ == '__main__':
             print(log_string)
             log_file.write(log_string)
             log_file.flush()
-
 
     log_string = "run_compile_all_cython: Compilation finished. "
 

@@ -8,6 +8,7 @@ Created on 10/11/2020
 # For example cdivision performs the C division which can result in undesired integer divisions where
 # floats are instead required
 import cython
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.initializedcheck(False)
@@ -15,7 +16,6 @@ import cython
 @cython.cdivision(True)
 @cython.overflowcheck(False)
 def isPrime(long n):
-
     # Declare index of for loop
     cdef long i
 

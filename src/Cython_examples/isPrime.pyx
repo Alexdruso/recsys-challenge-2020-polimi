@@ -5,7 +5,6 @@ Created on 10/11/2020
 """
 
 def isPrime(long n):
-
     # Declare index of for loop
     cdef long i
 

@@ -18,9 +18,12 @@ class NoDaemonProcess(multiprocessing.Process):
     # make 'daemon' attribute always return False
     def _get_daemon(self):
         return False
+
     def _set_daemon(self, value):
         pass
+
     daemon = property(_get_daemon, _set_daemon)
+
 
 # We sub-class multiprocessing.pool.Pool instead of multiprocessing.Pool
 # because the latter is only a wrapper function, not a proper class.
@@ -39,7 +42,7 @@ def work(num_procs):
     pool = multiprocessing.Pool(num_procs)
 
     result = pool.map(sleepawhile,
-        [randint(1, 5) for x in range(num_procs)])
+                      [randint(1, 5) for x in range(num_procs)])
 
     # The following is not really needed, since the (daemon) workers of the
     # child's pool are killed when the child is terminated, but it's good
@@ -47,6 +50,7 @@ def work(num_procs):
     pool.close()
     pool.join()
     return result
+
 
 def test():
     print("Creating 5 (non-daemon) workers and jobs in main process.")
@@ -58,9 +62,9 @@ def test():
     pool.join()
     print(result)
 
+
 if __name__ == '__main__':
     test()
-
 
     # from Base.PoolWithSubprocess import PoolWithSubprocess
     #

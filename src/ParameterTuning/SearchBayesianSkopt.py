@@ -14,35 +14,32 @@ import traceback
 
 
 class SearchBayesianSkopt(SearchAbstractClass):
-
     ALGORITHM_NAME = "SearchBayesianSkopt"
 
-    def __init__(self, recommender_class, evaluator_validation = None, evaluator_test = None, verbose = True):
+    def __init__(self, recommender_class, evaluator_validation=None, evaluator_test=None, verbose=True):
 
         assert evaluator_validation is not None, "{}: evaluator_validation must be provided".format(self.ALGORITHM_NAME)
 
         super(SearchBayesianSkopt, self).__init__(recommender_class,
-                                                  evaluator_validation = evaluator_validation,
-                                                  evaluator_test = evaluator_test,
-                                                  verbose = verbose)
+                                                  evaluator_validation=evaluator_validation,
+                                                  evaluator_test=evaluator_test,
+                                                  verbose=verbose)
 
-
-
-    def _set_skopt_params(self, n_calls = 70,
-                          n_random_starts = 20,
-                          n_points = 10000,
-                          n_jobs = 1,
+    def _set_skopt_params(self, n_calls=70,
+                          n_random_starts=20,
+                          n_points=10000,
+                          n_jobs=1,
                           # noise = 'gaussian',
-                          noise = 1e-5,
-                          acq_func = 'gp_hedge',
-                          acq_optimizer = 'auto',
-                          random_state = None,
-                          verbose = True,
-                          n_restarts_optimizer = 10,
-                          xi = 0.01,
-                          kappa = 1.96,
-                          x0 = None,
-                          y0 = None):
+                          noise=1e-5,
+                          acq_func='gp_hedge',
+                          acq_optimizer='auto',
+                          random_state=None,
+                          verbose=True,
+                          n_restarts_optimizer=10,
+                          xi=0.01,
+                          kappa=1.96,
+                          x0=None,
+                          y0=None):
         """
         wrapper to change the params of the bayesian optimizator.
         for further details:
@@ -64,24 +61,25 @@ class SearchBayesianSkopt(SearchAbstractClass):
         self.x0 = x0
         self.y0 = y0
 
-
-
     def _resume_from_saved(self):
 
         try:
-            self.metadata_dict = self.dataIO.load_data(file_name = self.output_file_name_root + "_metadata")
+            self.metadata_dict = self.dataIO.load_data(file_name=self.output_file_name_root + "_metadata")
 
         except (KeyboardInterrupt, SystemExit) as e:
             # If getting a interrupt, terminate without saving the exception
             raise e
 
         except FileNotFoundError:
-            self._write_log("{}: Resuming '{}' Failed, no such file exists.\n".format(self.ALGORITHM_NAME, self.output_file_name_root))
+            self._write_log("{}: Resuming '{}' Failed, no such file exists.\n".format(self.ALGORITHM_NAME,
+                                                                                      self.output_file_name_root))
             self.resume_from_saved = False
             return None, None
 
         except Exception as e:
-            self._write_log("{}: Resuming '{}' Failed, generic exception: {}.\n".format(self.ALGORITHM_NAME, self.output_file_name_root, str(e)))
+            self._write_log("{}: Resuming '{}' Failed, generic exception: {}.\n".format(self.ALGORITHM_NAME,
+                                                                                        self.output_file_name_root,
+                                                                                        str(e)))
             traceback.print_exc()
             self.resume_from_saved = False
             return None, None
@@ -96,7 +94,8 @@ class SearchBayesianSkopt(SearchAbstractClass):
         result_on_validation_list_input = []
 
         # The hyperparameters are saved for all cases even if they throw an exception
-        while self.model_counter<len(hyperparameters_list_saved) and hyperparameters_list_saved[self.model_counter] is not None:
+        while self.model_counter < len(hyperparameters_list_saved) and hyperparameters_list_saved[
+            self.model_counter] is not None:
 
             hyperparameters_config_saved = hyperparameters_list_saved[self.model_counter]
 
@@ -112,13 +111,13 @@ class SearchBayesianSkopt(SearchAbstractClass):
                 # maximum value as per hyperparameter search space. If not, the gp_minimize will return an error
                 # as some values will be outside (lower) than the search space
 
-                if isinstance(self.hyperparams_values[index], Categorical) and self.hyperparams_values[index].transformed_size == 1:
+                if isinstance(self.hyperparams_values[index], Categorical) and self.hyperparams_values[
+                    index].transformed_size == 1:
                     value_input = self.hyperparams_values[index].bounds[0]
                 else:
                     value_input = value_saved
 
                 hyperparameters_config_input.append(value_input)
-
 
             hyperparameters_list_input.append(hyperparameters_config_input)
 
@@ -130,17 +129,16 @@ class SearchBayesianSkopt(SearchAbstractClass):
                 result_on_validation_list_input.append(+ self.INVALID_CONFIG_VALUE)
 
                 assert self.metadata_dict["exception_list"][self.model_counter] is not None, \
-                    "{}: Resuming '{}' Failed due to inconsistent data. Invalid validation result found in position {} but no corresponding exception detected.".format(self.ALGORITHM_NAME, self.output_file_name_root, self.model_counter)
+                    "{}: Resuming '{}' Failed due to inconsistent data. Invalid validation result found in position {} but no corresponding exception detected.".format(
+                        self.ALGORITHM_NAME, self.output_file_name_root, self.model_counter)
             else:
                 result_on_validation_list_input.append(- validation_result[self.metric_to_optimize])
 
-
-
             self.model_counter += 1
 
-
-        self._print("{}: Resuming '{}'... Loaded {} configurations.".format(self.ALGORITHM_NAME, self.output_file_name_root, self.model_counter))
-
+        self._print(
+            "{}: Resuming '{}'... Loaded {} configurations.".format(self.ALGORITHM_NAME, self.output_file_name_root,
+                                                                    self.model_counter))
 
         # If the data structure exists but is empty, return None
         if len(hyperparameters_list_input) == 0:
@@ -151,28 +149,20 @@ class SearchBayesianSkopt(SearchAbstractClass):
         if self.model_counter < self.n_calls:
             self.resume_from_saved = False
 
-
         return hyperparameters_list_input, result_on_validation_list_input
-
-
-
-
-
-
-
 
     def search(self, recommender_input_args,
                parameter_search_space,
-               metric_to_optimize = "MAP",
-               n_cases = 20,
-               n_random_starts = 5,
-               output_folder_path = None,
-               output_file_name_root = None,
-               save_model = "best",
-               save_metadata = True,
-               resume_from_saved = False,
-               recommender_input_args_last_test = None,
-               evaluate_on_test_each_best_solution = True,
+               metric_to_optimize="MAP",
+               n_cases=20,
+               n_random_starts=5,
+               output_folder_path=None,
+               output_file_name_root=None,
+               save_model="best",
+               save_metadata=True,
+               resume_from_saved=False,
+               recommender_input_args_last_test=None,
+               evaluate_on_test_each_best_solution=True,
                ):
         """
 
@@ -192,8 +182,7 @@ class SearchBayesianSkopt(SearchAbstractClass):
         :return:
         """
 
-
-        self._set_skopt_params()    ### default parameters are set here
+        self._set_skopt_params()  ### default parameters are set here
 
         self._set_search_attributes(recommender_input_args,
                                     recommender_input_args_last_test,
@@ -206,13 +195,11 @@ class SearchBayesianSkopt(SearchAbstractClass):
                                     evaluate_on_test_each_best_solution,
                                     n_cases)
 
-
         self.parameter_search_space = parameter_search_space
         self.n_random_starts = n_random_starts
         self.n_calls = n_cases
         self.n_jobs = 1
         self.n_loaded_counter = 0
-
 
         self.hyperparams = dict()
         self.hyperparams_names = list()
@@ -228,8 +215,8 @@ class SearchBayesianSkopt(SearchAbstractClass):
                 self.hyperparams[name] = hyperparam
 
             else:
-                raise ValueError("{}: Unexpected parameter type: {} - {}".format(self.ALGORITHM_NAME, str(name), str(hyperparam)))
-
+                raise ValueError(
+                    "{}: Unexpected parameter type: {} - {}".format(self.ALGORITHM_NAME, str(name), str(hyperparam)))
 
         if self.resume_from_saved:
             hyperparameters_list_input, result_on_validation_list_saved = self._resume_from_saved()
@@ -239,8 +226,6 @@ class SearchBayesianSkopt(SearchAbstractClass):
             self.n_random_starts = max(0, self.n_random_starts - self.model_counter)
             self.n_calls = max(0, self.n_calls - self.model_counter)
             self.n_loaded_counter = self.model_counter
-
-
 
         self.result = gp_minimize(self._objective_function_list_input,
                                   self.hyperparams_values,
@@ -261,25 +246,18 @@ class SearchBayesianSkopt(SearchAbstractClass):
                                   noise=self.noise,
                                   n_jobs=self.n_jobs)
 
-
         if self.n_loaded_counter < self.model_counter:
             self._write_log("{}: Search complete. Best config is {}: {}\n".format(self.ALGORITHM_NAME,
-                                                                           self.metadata_dict["hyperparameters_best_index"],
-                                                                           self.metadata_dict["hyperparameters_best"]))
-
+                                                                                  self.metadata_dict[
+                                                                                      "hyperparameters_best_index"],
+                                                                                  self.metadata_dict[
+                                                                                      "hyperparameters_best"]))
 
         if self.recommender_input_args_last_test is not None:
             self._evaluate_on_test_with_data_last()
-
-
-
-
-
-
 
     def _objective_function_list_input(self, current_fit_parameters_list_of_values):
 
         current_fit_parameters_dict = dict(zip(self.hyperparams_names, current_fit_parameters_list_of_values))
 
         return self._objective_function(current_fit_parameters_dict)
-

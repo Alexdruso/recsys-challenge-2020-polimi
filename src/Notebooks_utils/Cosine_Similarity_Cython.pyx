@@ -216,5 +216,3 @@ cdef class Cosine_Similarity:
                                     dtype=np.float32)
 
             return W_sparse
-
-

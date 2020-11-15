@@ -10,7 +10,6 @@ import numpy as np
 import unittest
 
 
-
 class MyTestCase(unittest.TestCase):
 
     def test_Gini_Index(self):
@@ -24,14 +23,12 @@ class MyTestCase(unittest.TestCase):
         gini_index.recommended_counter = np.ones(n_items)
         assert np.isclose(1.0, gini_index.get_metric_value(), atol=1e-2), "Gini_Index metric incorrect"
 
-        gini_index.recommended_counter = np.ones(n_items)*1e-12
+        gini_index.recommended_counter = np.ones(n_items) * 1e-12
         gini_index.recommended_counter[0] = 1.0
         assert np.isclose(0.0, gini_index.get_metric_value(), atol=1e-2), "Gini_Index metric incorrect"
 
         # gini_index.recommended_counter = np.random.uniform(0, 1, n_items)
         # assert  np.isclose(0.3, gini_index.get_metric_value(), atol=1e-1), "Gini_Index metric incorrect"
-
-
 
     def test_Shannon_Entropy(self):
 
@@ -49,16 +46,13 @@ class MyTestCase(unittest.TestCase):
         assert np.isclose(0.0, shannon_entropy.get_metric_value(), atol=1e-3), "metric incorrect"
 
         shannon_entropy.recommended_counter = np.random.uniform(0, 100, n_items).astype(np.int)
-        assert  np.isclose(9.6, shannon_entropy.get_metric_value(), atol=1e-1), "metric incorrect"
+        assert np.isclose(9.6, shannon_entropy.get_metric_value(), atol=1e-1), "metric incorrect"
 
         # n_items = 10000
         #
         # shannon_entropy.recommended_counter = np.random.normal(0, 50, n_items).astype(np.int)
         # shannon_entropy.recommended_counter += abs(min(shannon_entropy.recommended_counter))
         # assert  np.isclose(9.8, shannon_entropy.get_metric_value(), atol=1e-1), "metric incorrect"
-
-
-
 
     def test_Diversity_list_all_equals(self):
 
@@ -77,37 +71,31 @@ class MyTestCase(unittest.TestCase):
         item_id_list = np.arange(0, n_items, dtype=np.int)
 
         for n_user in range(n_users):
-
             np.random.shuffle(item_id_list)
             recommended = item_id_list[:cutoff]
-            URM_predicted_row.extend([n_user]*cutoff)
+            URM_predicted_row.extend([n_user] * cutoff)
             URM_predicted_col.extend(recommended)
 
             diversity_list.add_recommendations(recommended)
-
 
         object_diversity = diversity_list.get_metric_value()
 
         URM_predicted_data = np.ones_like(URM_predicted_row)
 
-        URM_predicted_sparse = sps.csr_matrix((URM_predicted_data, (URM_predicted_row, URM_predicted_col)), dtype=np.int)
+        URM_predicted_sparse = sps.csr_matrix((URM_predicted_data, (URM_predicted_row, URM_predicted_col)),
+                                              dtype=np.int)
 
         co_counts = URM_predicted_sparse.dot(URM_predicted_sparse.T).toarray()
         np.fill_diagonal(co_counts, 0)
 
-        all_user_couples_count = n_users**2 - n_users
+        all_user_couples_count = n_users ** 2 - n_users
 
-        diversity_cumulative = 1 - co_counts/cutoff
+        diversity_cumulative = 1 - co_counts / cutoff
         np.fill_diagonal(diversity_cumulative, 0)
 
-        diversity_cooccurrence = diversity_cumulative.sum()/all_user_couples_count
+        diversity_cooccurrence = diversity_cumulative.sum() / all_user_couples_count
 
-        assert  np.isclose(diversity_cooccurrence, object_diversity, atol=1e-4), "metric incorrect"
-
-
-
-
-
+        assert np.isclose(diversity_cooccurrence, object_diversity, atol=1e-4), "metric incorrect"
 
     def test_Diversity_list(self):
 
@@ -126,33 +114,31 @@ class MyTestCase(unittest.TestCase):
         item_id_list = np.arange(0, n_items, dtype=np.int)
 
         for n_user in range(n_users):
-
             np.random.shuffle(item_id_list)
             recommended = item_id_list[:cutoff]
-            URM_predicted_row.extend([n_user]*cutoff)
+            URM_predicted_row.extend([n_user] * cutoff)
             URM_predicted_col.extend(recommended)
 
             diversity_list.add_recommendations(recommended)
-
 
         object_diversity = diversity_list.get_metric_value()
 
         URM_predicted_data = np.ones_like(URM_predicted_row)
 
-        URM_predicted_sparse = sps.csr_matrix((URM_predicted_data, (URM_predicted_row, URM_predicted_col)), dtype=np.int)
+        URM_predicted_sparse = sps.csr_matrix((URM_predicted_data, (URM_predicted_row, URM_predicted_col)),
+                                              dtype=np.int)
 
         co_counts = URM_predicted_sparse.dot(URM_predicted_sparse.T).toarray()
         np.fill_diagonal(co_counts, 0)
 
-        all_user_couples_count = n_users**2 - n_users
+        all_user_couples_count = n_users ** 2 - n_users
 
-        diversity_cumulative = 1 - co_counts/cutoff
+        diversity_cumulative = 1 - co_counts / cutoff
         np.fill_diagonal(diversity_cumulative, 0)
 
-        diversity_cooccurrence = diversity_cumulative.sum()/all_user_couples_count
+        diversity_cooccurrence = diversity_cumulative.sum() / all_user_couples_count
 
-        assert  np.isclose(diversity_cooccurrence, object_diversity, atol=1e-4), "metric incorrect"
-
+        assert np.isclose(diversity_cooccurrence, object_diversity, atol=1e-4), "metric incorrect"
 
     def test_AUC(self):
 
@@ -165,8 +151,6 @@ class MyTestCase(unittest.TestCase):
 
         self.assertTrue(np.allclose(roc_auc(is_relevant),
                                     (2. / 3 + 1. / 3) / 2))
-
-
 
     def test_Recall(self):
 
@@ -191,8 +175,6 @@ class MyTestCase(unittest.TestCase):
         # for at, val in zip(thresholds, values):
         #     self.assertTrue(np.allclose(np.asarray(recall(ranked_list_1, pos_items, at=at)), val))
 
-
-
     def test_Precision(self):
 
         from ...Base.Evaluation.metrics import precision
@@ -216,8 +198,6 @@ class MyTestCase(unittest.TestCase):
         # for at, val in zip(thresholds, values):
         #     self.assertTrue(np.allclose(np.asarray(precision(ranked_list_1, pos_items, at=at)), val))
 
-
-
     def test_RR(self):
 
         from ...Base.Evaluation.metrics import rr
@@ -240,8 +220,6 @@ class MyTestCase(unittest.TestCase):
         # values = [0.0, 1. / 2, 1. / 2, 1. / 2, 1. / 2]
         # for at, val in zip(thresholds, values):
         #     self.assertTrue(np.allclose(np.asarray(rr(ranked_list_1, pos_items, at=at)), val))
-
-
 
     def test_MAP(self):
 
@@ -280,8 +258,6 @@ class MyTestCase(unittest.TestCase):
         # for at, val in zip(thresholds, values):
         #     self.assertTrue(np.allclose(np.asarray(map(ranked_list_1, pos_items, at)), val))
 
-
-
     def test_NDCG(self):
 
         from ...Base.Evaluation.metrics import dcg, ndcg
@@ -309,6 +285,4 @@ class MyTestCase(unittest.TestCase):
 
 
 if __name__ == '__main__':
-
     unittest.main()
-

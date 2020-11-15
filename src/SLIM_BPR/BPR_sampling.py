@@ -1,6 +1,4 @@
-
-
-#!/usr/bin/env python3
+# !/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on 5/09/2017
@@ -15,7 +13,6 @@ class BPR_Sampling(object):
     def __init__(self):
         super(BPR_Sampling, self).__init__()
 
-
     def sampleUser(self):
         """
         Sample a user that has viewed at least one and not all items
@@ -28,7 +25,6 @@ class BPR_Sampling(object):
 
             if (numSeenItems > 0 and numSeenItems < self.n_items):
                 return user_id
-
 
     def sampleItemPair(self, user_id):
         """
@@ -48,7 +44,6 @@ class BPR_Sampling(object):
             if (neg_item_id not in userSeenItems):
                 return pos_item_id, neg_item_id
 
-
     def sampleTriple(self):
         """
         Randomly samples a user and then samples randomly a seen and not seen item
@@ -60,7 +55,6 @@ class BPR_Sampling(object):
 
         return user_id, pos_item_id, neg_item_id
 
-
     def initializeFastSampling(self, positive_threshold=3):
         print("Initializing fast sampling")
 
@@ -68,7 +62,7 @@ class BPR_Sampling(object):
         self.userSeenItems = dict()
 
         # Select only positive interactions
-        URM_train_positive = self.URM_train.multiply(self.URM_train>positive_threshold)
+        URM_train_positive = self.URM_train.multiply(self.URM_train > positive_threshold)
 
         for user_id in range(self.n_users):
 
@@ -78,11 +72,10 @@ class BPR_Sampling(object):
 
         self.eligibleUsers = np.array(self.eligibleUsers)
 
-
     def sampleBatch(self):
         user_id_list = np.random.choice(self.eligibleUsers, size=(self.batch_size))
-        pos_item_id_list = [None]*self.batch_size
-        neg_item_id_list = [None]*self.batch_size
+        pos_item_id_list = [None] * self.batch_size
+        neg_item_id_list = [None] * self.batch_size
 
         for sample_index in range(self.batch_size):
             user_id = user_id_list[sample_index]

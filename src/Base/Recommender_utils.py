@@ -10,6 +10,7 @@ import scipy.sparse as sps
 import time
 import os
 
+
 def check_matrix(X, format='csc', dtype=np.float32):
     """
     This function takes a matrix as input and transforms it into the specified format.
@@ -21,7 +22,6 @@ def check_matrix(X, format='csc', dtype=np.float32):
     :param dtype:
     :return:
     """
-
 
     if format == 'csc' and not isinstance(X, sps.csc_matrix):
         return X.tocsc().astype(dtype)
@@ -52,7 +52,7 @@ def check_matrix(X, format='csc', dtype=np.float32):
         return X.astype(dtype)
 
 
-def similarityMatrixTopK(item_weights, k=100, verbose = False):
+def similarityMatrixTopK(item_weights, k=100, verbose=False):
     """
     The function selects the TopK most similar elements, column-wise
 
@@ -85,31 +85,27 @@ def similarityMatrixTopK(item_weights, k=100, verbose = False):
     else:
         column_row_index = np.arange(nitems, dtype=np.int32)
 
-
-
     for item_idx in range(nitems):
 
         cols_indptr.append(len(data))
 
         if sparse_weights:
             start_position = item_weights.indptr[item_idx]
-            end_position = item_weights.indptr[item_idx+1]
+            end_position = item_weights.indptr[item_idx + 1]
 
             column_data = item_weights.data[start_position:end_position]
             column_row_index = item_weights.indices[start_position:end_position]
 
         else:
-            column_data = item_weights[:,item_idx]
+            column_data = item_weights[:, item_idx]
 
-
-        non_zero_data = column_data!=0
+        non_zero_data = column_data != 0
 
         idx_sorted = np.argsort(column_data[non_zero_data])  # sort by column
         top_k_idx = idx_sorted[-k:]
 
         data.extend(column_data[non_zero_data][top_k_idx])
         rows_indices.extend(column_row_index[non_zero_data][top_k_idx])
-
 
     cols_indptr.append(len(data))
 
@@ -122,14 +118,11 @@ def similarityMatrixTopK(item_weights, k=100, verbose = False):
     return W_sparse
 
 
-
-
 def areURMequals(URM1, URM2):
-
-    if(URM1.shape != URM2.shape):
+    if (URM1.shape != URM2.shape):
         return False
 
-    return (URM1-URM2).nnz ==0
+    return (URM1 - URM2).nnz == 0
 
 
 def removeTopPop(URM_1, URM_2=None, percentageToRemove=0.2):
@@ -143,35 +136,32 @@ def removeTopPop(URM_1, URM_2=None, percentageToRemove=0.2):
              Array: removedItems
     """
 
-
     item_pop = URM_1.sum(axis=0)  # this command returns a numpy.matrix of size (1, nitems)
 
     if URM_2 != None:
-
         assert URM_2.shape[1] == URM_1.shape[1], \
-            "The two URM do not contain the same number of columns, URM_1 has {}, URM_2 has {}".format(URM_1.shape[1], URM_2.shape[1])
+            "The two URM do not contain the same number of columns, URM_1 has {}, URM_2 has {}".format(URM_1.shape[1],
+                                                                                                       URM_2.shape[1])
 
         item_pop += URM_2.sum(axis=0)
-
 
     item_pop = np.asarray(item_pop).squeeze()  # necessary to convert it into a numpy.array of size (nitems,)
     popularItemsSorted = np.argsort(item_pop)[::-1]
 
-    numItemsToRemove = int(len(popularItemsSorted)*percentageToRemove)
+    numItemsToRemove = int(len(popularItemsSorted) * percentageToRemove)
 
     # Choose which columns to keep
-    itemMask = np.in1d(np.arange(len(popularItemsSorted)), popularItemsSorted[:numItemsToRemove],  invert=True)
+    itemMask = np.in1d(np.arange(len(popularItemsSorted)), popularItemsSorted[:numItemsToRemove], invert=True)
 
     # Map the column index of the new URM to the original ItemID
     itemMappings = np.arange(len(popularItemsSorted))[itemMask]
 
     removedItems = np.arange(len(popularItemsSorted))[np.logical_not(itemMask)]
 
-    return URM_1[:,itemMask], itemMappings, removedItems
+    return URM_1[:, itemMask], itemMappings, removedItems
 
 
 def addZeroSamples(S_matrix, numSamplesToAdd):
-
     n_items = S_matrix.shape[1]
 
     S_matrix_coo = S_matrix.tocoo()
@@ -212,23 +202,14 @@ def addZeroSamples(S_matrix, numSamplesToAdd):
 
 
 def reshapeSparse(sparseMatrix, newShape):
-
     if sparseMatrix.shape[0] > newShape[0] or sparseMatrix.shape[1] > newShape[1]:
         ValueError("New shape cannot be smaller than SparseMatrix. SparseMatrix shape is: {}, newShape is {}".format(
             sparseMatrix.shape, newShape))
-
 
     sparseMatrix = sparseMatrix.tocoo()
     newMatrix = sps.csr_matrix((sparseMatrix.data, (sparseMatrix.row, sparseMatrix.col)), shape=newShape)
 
     return newMatrix
-
-
-
-
-
-
-
 
 
 def get_unique_temp_folder(input_temp_folder_path):
@@ -246,10 +227,8 @@ def get_unique_temp_folder(input_temp_folder_path):
     counter_suffix = 0
 
     while os.path.isdir(progressive_temp_folder_name):
-
         counter_suffix += 1
         progressive_temp_folder_name = input_temp_folder_path + "_" + str(counter_suffix)
-
 
     progressive_temp_folder_name += "/"
     os.makedirs(progressive_temp_folder_name)

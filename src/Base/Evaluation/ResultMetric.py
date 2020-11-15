@@ -13,14 +13,10 @@ class ResultMetric(dict):
     It can be used as if it were a normal dictionary
     """
 
-    def __init__(self,*arg,**kw):
-
-       super(ResultMetric, self).__init__(*arg, **kw)
-
-
+    def __init__(self, *arg, **kw):
+        super(ResultMetric, self).__init__(*arg, **kw)
 
     def __get_result_string(self):
-
         output_str = ""
 
         for metric in self.keys():
@@ -28,12 +24,7 @@ class ResultMetric(dict):
 
         return output_str
 
-
     def __repr__(self):
-
         print("Calling redefined STR")
 
         return self.__get_result_string()
-
-
-

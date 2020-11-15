@@ -6,7 +6,6 @@ Created on 14/09/17
 @author: Maurizio Ferrari Dacrema
 """
 
-
 import zipfile, shutil
 import pandas as pd
 from Data_manager.DatasetMapperManager import DatasetMapperManager
@@ -16,7 +15,6 @@ from Data_manager.Movielens._utils_movielens_parser import _loadICM_tags, _loadI
 
 
 class Movielens20MReader(DataReader):
-
     DATASET_URL = "http://files.grouplens.org/datasets/movielens/ml-20m.zip"
     DATASET_SUBFOLDER = "Movielens20M/"
     AVAILABLE_ICM = ["ICM_all", "ICM_genres", "ICM_tags"]
@@ -27,11 +25,10 @@ class Movielens20MReader(DataReader):
     def _get_dataset_name_root(self):
         return self.DATASET_SUBFOLDER
 
-
     def _load_from_original_file(self):
         # Load data from original
 
-        zipFile_path =  self.DATASET_SPLIT_ROOT_FOLDER + self.DATASET_SUBFOLDER
+        zipFile_path = self.DATASET_SPLIT_ROOT_FOLDER + self.DATASET_SUBFOLDER
 
         try:
 
@@ -45,11 +42,9 @@ class Movielens20MReader(DataReader):
 
             dataFile = zipfile.ZipFile(zipFile_path + "ml-20m.zip")
 
-
         ICM_genre_path = dataFile.extract("ml-20m/movies.csv", path=zipFile_path + "decompressed/")
         ICM_tags_path = dataFile.extract("ml-20m/tags.csv", path=zipFile_path + "decompressed/")
         URM_path = dataFile.extract("ml-20m/ratings.csv", path=zipFile_path + "decompressed/")
-
 
         self._print("Loading Item Features Genres")
         ICM_genres_dataframe = _loadICM_genres(ICM_genre_path, header=0, separator=',', genresSeparator="|")
@@ -69,11 +64,8 @@ class Movielens20MReader(DataReader):
         dataset_manager.add_ICM(ICM_tags_dataframe, "ICM_tags")
         dataset_manager.add_ICM(ICM_all_dataframe, "ICM_all")
 
-
         loaded_dataset = dataset_manager.generate_Dataset(dataset_name=self._get_dataset_name(),
                                                           is_implicit=self.IS_IMPLICIT)
-
-
 
         self._print("cleaning temporary files")
 
@@ -82,11 +74,3 @@ class Movielens20MReader(DataReader):
         self._print("saving URM and ICM")
 
         return loaded_dataset
-
-
-
-
-
-
-
-
