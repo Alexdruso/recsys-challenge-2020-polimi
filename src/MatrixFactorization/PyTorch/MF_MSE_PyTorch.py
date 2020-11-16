@@ -67,14 +67,14 @@ class MF_MSE_PyTorch(BaseRecommender, Incremental_Training_Early_Stopping):
             self.device = torch.device('cpu')
             print("MF_MSE_PyTorch: Using CPU")
 
-        from MatrixFactorization.PyTorch.MF_MSE_PyTorch_model import MF_MSE_PyTorch_model, DatasetIterator_URM
+        from ...MatrixFactorization.PyTorch.MF_MSE_PyTorch_model import MF_MSE_PyTorch_model, DatasetIterator_URM
 
         n_users, n_items = self.URM_train.shape
 
         self.pyTorchModel = MF_MSE_PyTorch_model(n_users, n_items, self.n_factors).to(self.device)
 
         # Choose loss
-        self.lossFunction = torch.nn.MSELoss(size_average=False)
+        self.lossFunction = torch.nn.MSELoss()
         # self.lossFunction = torch.nn.BCELoss(size_average=False)
         self.optimizer = torch.optim.Adagrad(self.pyTorchModel.parameters(), lr=self.learning_rate)
 

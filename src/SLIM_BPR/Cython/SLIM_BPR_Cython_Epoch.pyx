@@ -31,7 +31,7 @@ ELSE:
 
 
 
-from Base.Recommender_utils import similarityMatrixTopK, check_matrix
+from ...Base.Recommender_utils import similarityMatrixTopK, check_matrix
 import numpy as np
 import cython
 cimport numpy as np

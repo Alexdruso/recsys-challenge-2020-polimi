@@ -20,11 +20,9 @@ class SLIMElasticNetRecommender(BaseItemSimilarityMatrixRecommender):
     Train a Sparse Linear Methods (SLIM) item similarity model.
     NOTE: ElasticNet solver is parallel, a single intance of SLIM_ElasticNet will
           make use of half the cores available
-
     See:
         Efficient Top-N Recommendation by Linear Regression,
         M. Levy and K. Jack, LSRS workshop at RecSys 2013.
-
         SLIM: Sparse linear methods for top-n recommender systems,
         X. Ning and G. Karypis, ICDM 2011.
         http://glaros.dtc.umn.edu/gkhome/fetch/papers/SLIM2011icdm.pdf
@@ -35,7 +33,7 @@ class SLIMElasticNetRecommender(BaseItemSimilarityMatrixRecommender):
     def __init__(self, URM_train, verbose=True):
         super(SLIMElasticNetRecommender, self).__init__(URM_train, verbose=verbose)
 
-    def fit(self, l1_ratio=0.1, alpha=1.0, positive_only=True, topK=100):
+    def fit(self, l1_ratio=0.1, alpha=1.0, positive_only=False, topK=1000, max_iter=100):
 
         assert l1_ratio >= 0 and l1_ratio <= 1, "{}: l1_ratio must be between 0 and 1, provided value was {}".format(
             self.RECOMMENDER_NAME, l1_ratio)
@@ -55,8 +53,8 @@ class SLIMElasticNetRecommender(BaseItemSimilarityMatrixRecommender):
                                 copy_X=False,
                                 precompute=True,
                                 selection='random',
-                                max_iter=100,
-                                tol=1e-4)
+                                max_iter=max_iter,
+                                tol=5e-5)
 
         URM_train = check_matrix(self.URM_train, 'csc', dtype=np.float32)
 
@@ -127,7 +125,7 @@ class SLIMElasticNetRecommender(BaseItemSimilarityMatrixRecommender):
             elapsed_time = time.time() - start_time
             new_time_value, new_time_unit = seconds_to_biggest_unit(elapsed_time)
 
-            if time.time() - start_time_printBatch > 300 or currentItem == n_items - 1:
+            if time.time() - start_time_printBatch > 60 or currentItem == n_items - 1:
                 self._print("Processed {} ( {:.2f}% ) in {:.2f} {}. Items per second: {:.2f}".format(
                     currentItem + 1,
                     100.0 * float(currentItem + 1) / n_items,
@@ -155,15 +153,15 @@ class MultiThreadSLIM_ElasticNet(SLIMElasticNetRecommender, BaseItemSimilarityMa
     def __init__(self, URM_train, verbose=True):
         super(MultiThreadSLIM_ElasticNet, self).__init__(URM_train, verbose=verbose)
 
-    def _partial_fit(self, currentItem, X, topK):
-        model = ElasticNet(alpha=1.0,
+    def _partial_fit(self, currentItem, X, topK, alpha, max_iter):
+        model = ElasticNet(alpha=alpha,
                            l1_ratio=self.l1_ratio,
                            positive=self.positive_only,
                            fit_intercept=False,
                            copy_X=False,
                            precompute=True,
                            selection='random',
-                           max_iter=100,
+                           max_iter=max_iter,
                            tol=1e-4)
 
         # WARNING: make a copy of X to avoid race conditions on column j
@@ -195,13 +193,17 @@ class MultiThreadSLIM_ElasticNet(SLIMElasticNetRecommender, BaseItemSimilarityMa
     def fit(self, l1_ratio=0.1,
             positive_only=True,
             topK=100,
-            workers=multiprocessing.cpu_count()):
+            workers=multiprocessing.cpu_count(),
+            max_iter=100,
+            alpha=0.01):
         assert l1_ratio >= 0 and l1_ratio <= 1, "SLIM_ElasticNet: l1_ratio must be between 0 and 1, provided value was {}".format(
             l1_ratio)
 
         self.l1_ratio = l1_ratio
         self.positive_only = positive_only
         self.topK = topK
+        self.max_iter = max_iter
+        self.alpha = alpha
 
         self.workers = workers
 
@@ -210,7 +212,7 @@ class MultiThreadSLIM_ElasticNet(SLIMElasticNetRecommender, BaseItemSimilarityMa
         # fit item's factors in parallel
 
         # oggetto riferito alla funzione nel quale predefinisco parte dell'input
-        _pfit = partial(self._partial_fit, X=self.URM_train, topK=self.topK)
+        _pfit = partial(self._partial_fit, X=self.URM_train, topK=self.topK, max_iter=self.max_iter,  alpha=self.alpha)
 
         # creo un pool con un certo numero di processi
         pool = Pool(processes=self.workers)
@@ -228,3 +230,4 @@ class MultiThreadSLIM_ElasticNet(SLIMElasticNetRecommender, BaseItemSimilarityMa
 
         # generate the sparse weight matrix
         self.W_sparse = sps.csr_matrix((values, (rows, cols)), shape=(n_items, n_items), dtype=np.float32)
+        self.URM_train = check_matrix(self.URM_train, 'csr', dtype=np.float32)

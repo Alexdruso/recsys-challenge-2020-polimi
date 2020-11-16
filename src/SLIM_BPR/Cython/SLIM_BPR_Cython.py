@@ -72,7 +72,7 @@ class SLIM_BPR_Cython(BaseItemSimilarityMatrixRecommender, Incremental_Training_
             **earlystopping_kwargs):
 
         # Import compiled module
-        from ...SLIM_BPR.Cython.SLIM_BPR_Cython_Epoch import SLIM_BPR_Cython_Epoch
+        from .SLIM_BPR_Cython_Epoch import SLIM_BPR_Cython_Epoch
 
         self.symmetric = symmetric
         self.train_with_sparse_weights = train_with_sparse_weights
