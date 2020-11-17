@@ -22,27 +22,13 @@ class P3alphaCBFMergedHybridRecommender(ItemKNNSimilarityHybridRecommender):
     def __init__(
             self,
             URM_train,
-            ICM_train,
-            topK_P3alpha = 100,
-            alpha_P3alpha = 1.0,
-            topK_knncbf = 50,
-            shrink_knncbf = 100,
-            similarity_knncbf='cosine',
-            implicit=True,
+            p3alpha_recommender: P3alphaRecommender,
+            item_knncbf_recommender: ItemKNNCBFRecommender,
             verbose=True
     ):
-
-        P3alpha_recommender = P3alphaRecommender(URM_train=URM_train, verbose=verbose)
-
-        P3alpha_recommender.fit(topK=topK_P3alpha,alpha=alpha_P3alpha,implicit=implicit)
-
-        item_knncbf_recommender = ItemKNNCBFRecommender(URM_train=URM_train, ICM_train=ICM_train, verbose=verbose)
-
-        item_knncbf_recommender.fit(topK=topK_knncbf,shrink=shrink_knncbf,similarity=similarity_knncbf)
-
         super(P3alphaCBFMergedHybridRecommender, self).__init__(
             URM_train,
-            Similarity_1=P3alpha_recommender.W_sparse,
+            Similarity_1=p3alpha_recommender.W_sparse,
             Similarity_2=item_knncbf_recommender.W_sparse,
             verbose=verbose
         )
