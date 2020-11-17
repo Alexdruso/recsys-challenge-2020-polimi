@@ -70,4 +70,4 @@ recommender.fit(
     feature_weighting=hyperparameters['feature_weighting']
 )
 
-recommender.save_model(folder_path='../models/', file_name=recommender.RECOMMENDER_NAME)
+recommender.save_model(folder_path='../models/', file_name=recommender.RECOMMENDER_NAME+'_' + hyperparameters['similarity'] + '_' + hyperparameters['feature_weighting'])
