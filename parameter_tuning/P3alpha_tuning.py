@@ -15,8 +15,8 @@ URM_train, URM_validation = split_train_in_two_percentage_global_sample(URM_all,
 evaluator_validation = EvaluatorHoldout(URM_validation, cutoff_list=[10], verbose=False)
 
 tuning_params = {
-    "topK": (10, 500),
-    "alpha": (0.0, 1.0)
+    "topK": (150, 250),
+    "alpha": (0.3, 0.7)
 }
 
 recommender = P3alphaRecommender(URM_train=URM_train, verbose=False)
@@ -45,8 +45,8 @@ logger = JSONLogger(path="logs/" + recommender.RECOMMENDER_NAME + "_logs.json")
 optimizer.subscribe(Events.OPTIMIZATION_STEP, logger)
 
 optimizer.maximize(
-    init_points=10,
-    n_iter=10,
+    init_points=3,
+    n_iter=15,
 )
 
 hyperparameters = optimizer.max['params']
