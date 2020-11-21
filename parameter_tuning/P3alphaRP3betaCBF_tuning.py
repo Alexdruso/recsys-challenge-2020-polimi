@@ -81,8 +81,8 @@ optimizer = BayesianOptimization(
 )
 
 optimizer.maximize(
-    init_points=100,
-    n_iter=40,
+    init_points=150,
+    n_iter=60,
 )
 
 hyperparameters = optimizer.max['params']
