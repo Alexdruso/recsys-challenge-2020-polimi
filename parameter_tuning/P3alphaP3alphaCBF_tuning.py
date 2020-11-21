@@ -18,26 +18,42 @@ from src.GraphBased.P3alphaCBFRecommender import P3alphaCBFRecommender
 from bayes_opt.logger import JSONLogger
 from bayes_opt.event import Events
 
-from bayes_opt.util import load_logs
-
 from bayes_opt import BayesianOptimization
 
-p3alpha_recommender = P3alphaRecommender(URM_train=URM_train)
+p3alpha_recommender = P3alphaRecommender(URM_train=URM_train, verbose=False)
 
-p3alphaCBF_recommender = P3alphaCBFRecommender(URM_train=URM_train, ICM_train=ICM_all)
-
+p3alphaCBF_recommender = P3alphaCBFRecommender(URM_train=URM_train, ICM_train=ICM_all, verbose=False)
 
 tuning_params = {
-    "cfTopK":(10, 500),
-    "cfAlpha":(0.1, 1),
-    "cbfTopK":(10, 500),
-    "cbfAlpha":(0.1,0.9),
-    "hybridTopK": (10, 500),
-    "hybridAlpha": (0.1, 0.9)
+    "cfTopK": (210, 230),
+    "cfAlpha": (0.45, 0.52),
+    "cbfTopK": (430, 440),
+    "cbfAlpha": (0.30, 0.32),
+    "hybridTopK": (300, 600),
+    "hybridAlpha": (0.6, 0.9)
 }
 
 
-def BO_func(hybridTopK, alpha):
+def BO_func(
+        cfTopK,
+        cfAlpha,
+        cbfTopK,
+        cbfAlpha,
+        hybridTopK,
+        hybridAlpha
+):
+    p3alpha_recommender.fit(
+        topK=int(cfTopK),
+        alpha=cfAlpha,
+        implicit=True
+    )
+
+    p3alphaCBF_recommender.fit(
+        topK=int(cbfTopK),
+        alpha=cbfAlpha,
+        implicit=False
+    )
+
     recommender = SimilarityMergedHybridRecommender(
         URM_train=URM_train,
         CFRecommender=p3alpha_recommender,
@@ -45,7 +61,10 @@ def BO_func(hybridTopK, alpha):
         verbose=False
     )
 
-    recommender.fit(topK=int(hybridTopK), alpha=alpha)
+    recommender.fit(
+        topK=int(hybridTopK),
+        alpha=hybridAlpha
+    )
     result_dict, _ = evaluator_validation.evaluateRecommender(recommender)
 
     return result_dict[10]["MAP"]
@@ -58,11 +77,8 @@ optimizer = BayesianOptimization(
     random_state=5,
 )
 
-logger = JSONLogger(path="logs/" + recommender.RECOMMENDER_NAME + "_logs.json")
-optimizer.subscribe(Events.OPTIMIZATION_STEP, logger)
-
 optimizer.maximize(
-    init_points=5,
+    init_points=100,
     n_iter=40,
 )
 
@@ -70,13 +86,30 @@ hyperparameters = optimizer.max['params']
 
 p3alpha_recommender = P3alphaRecommender(URM_train=URM_all)
 
+p3alpha_recommender.fit(
+    topK=int(hyperparameters['cfTopK']),
+    alpha=hyperparameters['cfAlpha'],
+    implicit=True,
+    normalize_similarity=True
+)
+
 p3alphaCBF_recommender = P3alphaCBFRecommender(URM_train=URM_all, ICM_train=ICM_all)
+
+p3alphaCBF_recommender.fit(
+    topK=int(hyperparameters['cbfTopK']),
+    alpha=hyperparameters['cbfAlpha'],
+    implicit=True,
+    normalize_similarity=True
+)
 
 recommender = SimilarityMergedHybridRecommender(
     URM_train=URM_all,
     CFRecommender=p3alpha_recommender,
     CBFRecommender=p3alphaCBF_recommender
 )
-recommender.fit(topK=int(hyperparameters['hybridTopK']), alpha=hyperparameters['hybridAlpha'])
+recommender.fit(
+    topK=int(hyperparameters['hybridTopK']),
+    alpha=hyperparameters['hybridAlpha']
+)
 
-recommender.save_model(folder_path='../models/', file_name=recommender.RECOMMENDER_NAME)
+#recommender.save_model(folder_path='../models/', file_name=recommender.RECOMMENDER_NAME)

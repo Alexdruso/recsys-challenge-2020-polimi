@@ -10,17 +10,17 @@ URM_all = load_URM("in/data_train.csv")
 ICM_all = load_ICM("in/data_ICM_title_abstract.csv")
 
 p3alpha_recommender = P3alphaRecommender(URM_train=URM_all)
-p3alpha_recommender.load_model(folder_path='models/', file_name=p3alpha_recommender.RECOMMENDER_NAME)
+p3alpha_recommender.fit(topK=int(225.5),alpha=0.4748,implicit=True)
 
 p3alphaCBF_recommender = P3alphaCBFRecommender(URM_train=URM_all, ICM_train=ICM_all)
-p3alphaCBF_recommender.load_model(folder_path='models/', file_name=p3alphaCBF_recommender.RECOMMENDER_NAME + '_CBF')
+p3alphaCBF_recommender.fit(topK=436,alpha=0.3118,implicit=False)
 
 recommender = SimilarityMergedHybridRecommender(
     URM_train=URM_all,
     CFRecommender=p3alpha_recommender,
     CBFRecommender=p3alphaCBF_recommender
 )
-recommender.load_model(folder_path='models/', file_name=recommender.RECOMMENDER_NAME)
+recommender.fit(topK=393, alpha=0.7814)
 
 write_submission(recommender=recommender, target_users_path="in/data_target_users_test.csv",
                  out_path='out/{}_submission.csv'.format(recommender.RECOMMENDER_NAME))

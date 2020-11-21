@@ -16,7 +16,7 @@ import numpy as np
 
 
 class CFW_D_Similarity_Linalg(BaseItemSimilarityMatrixRecommender):
-    RECOMMENDER_NAME = "CFW_D_Similarity_Linalg"
+    RECOMMENDER_NAME = "CFW_D_Similarity_LinalgRecommender"
 
     def __init__(self, URM_train, ICM, S_matrix_target):
 

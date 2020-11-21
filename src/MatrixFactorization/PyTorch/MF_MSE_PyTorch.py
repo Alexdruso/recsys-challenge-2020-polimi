@@ -70,7 +70,7 @@ class MF_MSE_PyTorch(BaseMatrixFactorizationRecommender, Incremental_Training_Ea
         self.train_data_loader = DataLoader(dataset = dataset_iterator,
                                        batch_size = self.batch_size,
                                        shuffle = True,
-                                       #num_workers = 2,
+                                       #num_workers = 1,
                                        )
 
 
