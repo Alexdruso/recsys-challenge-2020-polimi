@@ -13,15 +13,15 @@ URM_train, URM_validation = split_train_in_two_percentage_global_sample(URM_all,
 evaluator_validation = EvaluatorHoldout(URM_validation, cutoff_list=[10], verbose=False)
 
 tuning_params = {
-    "topK": (10, 500),
-    "l2_norm": (1, 1e5)
+    "topK": (10, 150),
+    "l2_norm": (1e2, 1e5)
 }
 
-recommender = EASE_R_Recommender(URM_train=URM_train)
+recommender = EASE_R_Recommender(URM_train=URM_train, sparse_threshold_quota=1.0)
 
 
 def BO_func(topK, l2_norm):
-    recommender.fit(topK=int(topK), l2_norm=l2_norm)
+    recommender.fit(topK=int(topK), l2_norm=l2_norm, verbose=False)
     result_dict, _ = evaluator_validation.evaluateRecommender(recommender)
 
     return result_dict[10]["MAP"]
@@ -36,15 +36,9 @@ optimizer = BayesianOptimization(
     random_state=5,
 )
 
-from bayes_opt.logger import JSONLogger
-from bayes_opt.event import Events
-
-logger = JSONLogger(path="logs/" + recommender.RECOMMENDER_NAME + "_logs.json")
-optimizer.subscribe(Events.OPTIMIZATION_STEP, logger)
-
 optimizer.maximize(
-    init_points=3,
-    n_iter=2,
+    init_points=15,
+    n_iter=3,
 )
 
 hyperparameters = optimizer.max['params']
@@ -53,3 +47,8 @@ recommender = EASE_R_Recommender(URM_train=URM_all)
 recommender.fit(topK=int(hyperparameters['topK']), l2_norm=hyperparameters['l2_norm'])
 
 recommender.save_model(folder_path='../models/', file_name=recommender.RECOMMENDER_NAME)
+
+import json
+
+with open("logs/" + recommender.RECOMMENDER_NAME + "_logs.json", 'w') as json_file:
+    json.dump(optimizer.max, json_file)
