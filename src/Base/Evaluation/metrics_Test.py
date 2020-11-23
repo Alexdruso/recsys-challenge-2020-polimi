@@ -223,7 +223,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_MAP(self):
 
-        from ...Base.Evaluation.metrics import map
+        from ...Base.Evaluation.metrics import MAP
 
         pos_items = np.asarray([2, 4, 5, 10])
         ranked_list_1 = np.asarray([1, 2, 3, 4, 5])
