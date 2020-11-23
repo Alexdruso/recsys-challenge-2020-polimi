@@ -14,7 +14,6 @@ URM_train, URM_validation = split_train_in_two_percentage_global_sample(URM_all,
 
 evaluator_validation = EvaluatorHoldout(URM_validation, cutoff_list=[10], verbose=False)
 
-binarize_ICM(ICM_all)
 ICM_augmented = combine(ICM_all, URM_train)
 
 from src.Hybrid.SimilarityMergedHybridRecommender import SimilarityMergedHybridRecommender
