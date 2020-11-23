@@ -17,7 +17,7 @@ from bayes_opt import BayesianOptimization
 
 binarize_ICM(ICM_all)
 
-ICM_all = augment(ICM_all, URM_train)
+ICM_all = combine(ICM_all, URM_train)
 
 easerCBF_recommender = EASE_R_CBF_Recommender(URM_train=URM_train, ICM_train=ICM_all, verbose=False)
 

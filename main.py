@@ -9,7 +9,7 @@ from src.Utils.write_submission import write_submission
 URM_all = load_URM("in/data_train.csv")
 ICM_all = load_ICM("in/data_ICM_title_abstract.csv")
 
-ICM_all = augment(ICM=ICM_all, URM = URM_all)
+ICM_all = combine(ICM=ICM_all, URM = URM_all)
 
 p3alpha_recommender = P3alphaRecommender(URM_train=URM_all)
 p3alpha_recommender.fit(topK=221,alpha=0.5017,implicit=True)

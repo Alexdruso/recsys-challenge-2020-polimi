@@ -1,7 +1,7 @@
 from scipy import sparse as sps
 import numpy as np
 
-def augment(ICM: sps.csr_matrix, URM : sps.csr_matrix):
+def combine(ICM: sps.csr_matrix, URM : sps.csr_matrix):
     return sps.hstack((URM.T, ICM), format='csr')
 
 def binarize(x):

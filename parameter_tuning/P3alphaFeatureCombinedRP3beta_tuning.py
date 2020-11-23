@@ -3,6 +3,7 @@ from scipy import sparse as sps
 from src.Base.Evaluation.Evaluator import EvaluatorHoldout
 from src.Utils.load_ICM import load_ICM
 from src.Utils.load_URM import load_URM
+from src.Utils.ICM_preprocessing import *
 
 URM_all = load_URM("../in/data_train.csv")
 ICM_all = load_ICM("../in/data_ICM_title_abstract.csv")
@@ -13,8 +14,8 @@ URM_train, URM_validation = split_train_in_two_percentage_global_sample(URM_all,
 
 evaluator_validation = EvaluatorHoldout(URM_validation, cutoff_list=[10], verbose=False)
 
-
-ICM_augmented = sps.hstack((URM_train.T, ICM_all), format='csr')
+binarize_ICM(ICM_all)
+ICM_augmented = combine(ICM_all, URM_train)
 
 from src.Hybrid.SimilarityMergedHybridRecommender import SimilarityMergedHybridRecommender
 from src.GraphBased.P3alphaRecommender import P3alphaRecommender
@@ -29,9 +30,9 @@ rp3betaCBF_recommender = RP3betaCBFRecommender(URM_train=URM_train, ICM_train=IC
 tuning_params = {
     "cfTopK": (210, 230),
     "cfAlpha": (0.45, 0.52),
-    "cbfTopK": (400, 600),
-    "cbfAlpha": (0.3, 0.5),
-    "cbfBeta": (0.1, 0.5),
+    "cbfTopK": (600, 700),
+    "cbfAlpha": (0.4, 0.5),
+    "cbfBeta": (0.2, 0.3),
     "hybridTopK": (10, 500),
     "hybridAlpha": (0.1, 0.9)
 }
