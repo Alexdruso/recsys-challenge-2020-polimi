@@ -51,5 +51,5 @@ optimizer.maximize(
 
 import json
 
-with open("logs/FeatureAugmented" + easerCBF_recommender.RECOMMENDER_NAME + "_logs.json", 'w') as json_file:
+with open("logs/FeatureCombined" + easerCBF_recommender.RECOMMENDER_NAME + "_logs.json", 'w') as json_file:
     json.dump(optimizer.max, json_file)

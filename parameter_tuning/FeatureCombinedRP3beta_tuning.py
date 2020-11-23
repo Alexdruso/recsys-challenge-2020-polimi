@@ -54,5 +54,5 @@ optimizer.maximize(
 
 import json
 
-with open("logs/FeatureAugmented" + rp3betaCBF_recommender.RECOMMENDER_NAME + "_logs.json", 'w') as json_file:
+with open("logs/FeatureCombined" + rp3betaCBF_recommender.RECOMMENDER_NAME + "_logs.json", 'w') as json_file:
     json.dump(optimizer.max, json_file)
