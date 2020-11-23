@@ -1,4 +1,4 @@
-from src.Base.Evaluation.Evaluator import EvaluatorHoldout
+from src.Base.Evaluation.K_Fold_Evaluator import K_Fold_Evaluator_MAP
 from src.Utils.load_ICM import load_ICM
 from src.Utils.load_URM import load_URM
 from src.Utils.ICM_preprocessing import *
@@ -8,25 +8,42 @@ ICM_all = load_ICM("../../in/data_ICM_title_abstract.csv")
 from src.Data_manager.split_functions.split_train_validation_random_holdout import \
     split_train_in_two_percentage_global_sample
 
-URM_train, URM_validation = split_train_in_two_percentage_global_sample(URM_all, train_percentage=0.80)
+URMs_train = []
+URMs_validation = []
 
-evaluator_validation = EvaluatorHoldout(URM_validation, cutoff_list=[10], verbose=False)
+for k in range(5):
+    URM_train, URM_validation = split_train_in_two_percentage_global_sample(URM_all, train_percentage=0.80)
+    URMs_train.append(URM_train)
+    URMs_validation.append(URM_validation)
+
+evaluator_validation = K_Fold_Evaluator_MAP(URMs_validation, cutoff_list=[10], verbose=False)
+
+ICMs_combined = []
+for URM in URMs_train:
+    ICMs_combined.append(combine(ICM=ICM_all, URM=URM))
 
 from src.GraphBased.RP3betaCBFRecommender import RP3betaCBFRecommender
 
 from bayes_opt import BayesianOptimization
 
-binarize_ICM(ICM_all)
+rp3betaCBF_recommenders = []
 
-ICM_all = combine(ICM_all, URM_train)
-
-rp3betaCBF_recommender = RP3betaCBFRecommender(URM_train=URM_train, ICM_train=ICM_all, verbose=False)
+for index in range(len(URMs_train)):
+    rp3betaCBF_recommenders.append(
+        RP3betaCBFRecommender(
+            URM_train=URMs_train[index],
+            ICM_train=ICMs_combined[index],
+            verbose=False
+        )
+    )
 
 tuning_params = {
     "alpha": (0.1, 0.9),
     "beta": (0.1, 0.9),
-    "topK": (10, 700)
+    "topK": (10, 600)
 }
+
+results = []
 
 
 def BO_func(
@@ -34,10 +51,12 @@ def BO_func(
         beta,
         topK
 ):
-    rp3betaCBF_recommender.fit(alpha=alpha, beta=beta, topK=int(topK), implicit=True)
-    result_dict, _ = evaluator_validation.evaluateRecommender(rp3betaCBF_recommender)
+    for recommender in rp3betaCBF_recommenders:
+        recommender.fit(alpha=alpha, beta=beta, topK=int(topK), implicit=False)
 
-    return result_dict[10]["MAP"]
+    result = evaluator_validation.evaluateRecommender(rp3betaCBF_recommenders)
+    results.append(result)
+    return sum(result) / len(result)
 
 
 optimizer = BayesianOptimization(
@@ -48,11 +67,22 @@ optimizer = BayesianOptimization(
 )
 
 optimizer.maximize(
-    init_points=100,
-    n_iter=40,
+    init_points=20,
+    n_iter=8,
 )
+
 
 import json
 
-with open("logs/FeatureCombined" + rp3betaCBF_recommender.RECOMMENDER_NAME + "_logs.json", 'w') as json_file:
+with open("logs/FeatureCombined" + rp3betaCBF_recommenders[0].RECOMMENDER_NAME + "_logs.json", 'w') as json_file:
     json.dump(optimizer.max, json_file)
+
+from src.Base.Evaluation.k_fold_significance_test import compute_k_fold_significance
+
+for recommender in rp3betaCBF_recommenders:
+    recommender.fit(alpha=optimizer.max['params']['alpha'], beta=optimizer.max['params']['beta'],
+                    topK=int(optimizer.max['params']['topK']), implicit=False)
+
+result = evaluator_validation.evaluateRecommender(rp3betaCBF_recommenders)
+
+compute_k_fold_significance(result, results)
