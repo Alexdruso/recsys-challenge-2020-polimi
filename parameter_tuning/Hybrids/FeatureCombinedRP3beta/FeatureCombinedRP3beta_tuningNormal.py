@@ -22,8 +22,8 @@ for k in range(5):
     profile_length = np.ediff1d(URM_train.indptr)
     block_size = int(len(profile_length) * 0.25)
 
-    start_pos = 0 * block_size
-    end_pos = min(1 * block_size, len(profile_length))
+    start_pos = 1 * block_size
+    end_pos = min(3 * block_size, len(profile_length))
     sorted_users = np.argsort(profile_length)
 
     users_in_group = sorted_users[start_pos:end_pos]
@@ -57,9 +57,9 @@ for index in range(len(URMs_train)):
     )
 
 tuning_params = {
-    "alpha": (0.1, 0.9),
-    "beta": (0.1, 0.9),
-    "topK": (10, 600)
+    "alpha": (0.4, 0.5),
+    "beta": (0.2, 0.3),
+    "topK": (500, 600)
 }
 
 results = []
@@ -93,7 +93,7 @@ optimizer.maximize(
 
 import json
 
-with open("logs/FeatureCombined" + rp3betaCBF_recommenders[0].RECOMMENDER_NAME + "_worst25_logs.json", 'w') as json_file:
+with open("logs/FeatureCombined" + rp3betaCBF_recommenders[0].RECOMMENDER_NAME + "_normal_logs.json", 'w') as json_file:
     json.dump(optimizer.max, json_file)
 
 from src.Base.Evaluation.k_fold_significance_test import compute_k_fold_significance

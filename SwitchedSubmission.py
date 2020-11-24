@@ -29,19 +29,31 @@ from src.GraphBased.RP3betaCBFRecommender import RP3betaCBFRecommender
 ICM_combined = combine(ICM=ICM_all, URM=URM_all)
 
 p3alpha_recommender = P3alphaRecommender(URM_train=URM_all, verbose=False)
-p3alpha_recommender.fit(topK=228,alpha=0.512,implicit=True)
+p3alpha_recommender.fit(topK=210,alpha=0.45,implicit=True)
 
-rp3betaCBF_recommender = RP3betaCBFRecommender(URM_train=URM_all, ICM_train=ICM_all, verbose=False)
-rp3betaCBF_recommender.fit(topK=63,alpha=0.221,beta=0.341,implicit=False)
+rp3betaCBF_recommender = RP3betaCBFRecommender(URM_train=URM_all, ICM_train=ICM_combined, verbose=False)
+rp3betaCBF_recommender.fit(topK=536,alpha=0.41753274557496695,beta=0.2344960487580402,implicit=False)
 
-recommender_worst = RP3betaCBFRecommender(URM_train=URM_all, ICM_train=ICM_combined)
-recommender_worst.fit(topK=332, alpha=0.3888 , beta=0.1284)
+recommender_worst = SimilarityMergedHybridRecommender(URM_train=URM_all,CFRecommender=p3alpha_recommender,CBFRecommender=rp3betaCBF_recommender,verbose=False)
+recommender_worst.fit(topK=481, alpha=0.1)
+
+p3alpha_recommender = P3alphaRecommender(URM_train=URM_all, verbose=False)
+p3alpha_recommender.fit(topK=229,alpha=0.5059173017438977,implicit=True)
+
+rp3betaCBF_recommender = RP3betaCBFRecommender(URM_train=URM_all, ICM_train=ICM_combined, verbose=False)
+rp3betaCBF_recommender.fit(topK=516,alpha=0.4227727007111746,beta=0.23482852065641355,implicit=False)
 
 recommender_normal = SimilarityMergedHybridRecommender(URM_train=URM_all,CFRecommender=p3alpha_recommender,CBFRecommender=rp3betaCBF_recommender,verbose=False)
-recommender_normal.fit(topK=497,alpha=0.7)
+recommender_normal.fit(topK=456,alpha= 0.13589376902040495)
 
-recommender_best = RP3betaCBFRecommender(URM_train=URM_all, ICM_train=ICM_combined)
-recommender_best.fit(topK=493, alpha=0.5904 , beta=0.2887)
+p3alpha_recommender = P3alphaRecommender(URM_train=URM_all, verbose=False)
+p3alpha_recommender.fit(topK=210,alpha=0.45,implicit=True)
+
+rp3betaCBF_recommender = RP3betaCBFRecommender(URM_train=URM_all, ICM_train=ICM_combined, verbose=False)
+rp3betaCBF_recommender.fit(topK=539,alpha=0.5,beta=0.3,implicit=False)
+
+recommender_best = SimilarityMergedHybridRecommender(URM_train=URM_all,CFRecommender=p3alpha_recommender,CBFRecommender=rp3betaCBF_recommender,verbose=False)
+recommender_best.fit(topK=951, alpha=0.1,)
 
 import pandas as pd
 import csv
