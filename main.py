@@ -25,4 +25,4 @@ rp3betaCBF_recommender.fit(topK=529, alpha=0.453, beta=0.2266, implicit=False)
 #recommender.fit(topK=355, alpha=0.2222)
 
 write_submission(recommender=rp3betaCBF_recommender, target_users_path="in/data_target_users_test.csv",
-                 out_path='out/{}_submission.csv'.format(rp3betaCBF_recommender.RECOMMENDER_NAME))
+                 out_path='out/FeatureCombined{}_submission.csv'.format(rp3betaCBF_recommender.RECOMMENDER_NAME))

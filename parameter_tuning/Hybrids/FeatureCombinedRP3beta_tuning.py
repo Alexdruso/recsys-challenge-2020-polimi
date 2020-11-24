@@ -85,4 +85,4 @@ for recommender in rp3betaCBF_recommenders:
 
 result = evaluator_validation.evaluateRecommender(rp3betaCBF_recommenders)
 
-compute_k_fold_significance(result, results)
+compute_k_fold_significance(result, *results)
