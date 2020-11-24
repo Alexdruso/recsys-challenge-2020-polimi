@@ -3,8 +3,8 @@ from src.Utils.load_ICM import load_ICM
 from src.Utils.load_URM import load_URM
 from src.Utils.ICM_preprocessing import *
 
-URM_all = load_URM("../../in/data_train.csv")
-ICM_all = load_ICM("../../in/data_ICM_title_abstract.csv")
+URM_all = load_URM("../../../in/data_train.csv")
+ICM_all = load_ICM("../../../in/data_ICM_title_abstract.csv")
 from src.Data_manager.split_functions.split_train_validation_random_holdout import \
     split_train_in_two_percentage_global_sample
 

@@ -2,8 +2,8 @@ from src.Base.Evaluation.Evaluator import EvaluatorHoldout
 from src.Utils.load_ICM import load_ICM
 from src.Utils.load_URM import load_URM
 
-URM_all = load_URM("../../in/data_train.csv")
-ICM_all = load_ICM("../../in/data_ICM_title_abstract.csv")
+URM_all = load_URM("../../../in/data_train.csv")
+ICM_all = load_ICM("../../../in/data_ICM_title_abstract.csv")
 from src.Data_manager.split_functions.split_train_validation_random_holdout import \
     split_train_in_two_percentage_global_sample
 
@@ -14,9 +14,6 @@ evaluator_validation = EvaluatorHoldout(URM_validation, cutoff_list=[10], verbos
 from src.Hybrid.SimilarityMergedHybridRecommender import SimilarityMergedHybridRecommender
 from src.GraphBased.P3alphaRecommender import P3alphaRecommender
 from src.GraphBased.RP3betaCBFRecommender import RP3betaCBFRecommender
-
-from bayes_opt.logger import JSONLogger
-from bayes_opt.event import Events
 
 from bayes_opt import BayesianOptimization
 

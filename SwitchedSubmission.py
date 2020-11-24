@@ -17,9 +17,9 @@ sorted_users = np.argsort(profile_length)
 users_in_worst = set(sorted_users[start_worst:end_worst])
 
 
-users_in_normal = set(sorted_users[end_worst:end_normal])
+users_in_normal = set(sorted_users[end_worst+1:end_normal])
 
-users_in_best = set(sorted_users[end_normal:end_best])
+users_in_best = set(sorted_users[end_normal+1:end_best])
 
 
 from src.Hybrid.SimilarityMergedHybridRecommender import SimilarityMergedHybridRecommender

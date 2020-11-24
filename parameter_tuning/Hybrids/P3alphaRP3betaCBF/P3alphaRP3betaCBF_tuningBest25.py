@@ -1,12 +1,9 @@
-from scipy import sparse as sps
-
-from src.Base.Evaluation.Evaluator import EvaluatorHoldout
+from src.Base.Evaluation.K_Fold_Evaluator import K_Fold_Evaluator_MAP
 from src.Utils.load_ICM import load_ICM
 from src.Utils.load_URM import load_URM
-from src.Utils.ICM_preprocessing import *
 
-URM_all = load_URM("../../in/data_train.csv")
-ICM_all = load_ICM("../../in/data_ICM_title_abstract.csv")
+URM_all = load_URM("../../../in/data_train.csv")
+ICM_all = load_ICM("../../../in/data_ICM_title_abstract.csv")
 from src.Data_manager.split_functions.split_train_validation_random_holdout import \
     split_train_in_two_percentage_global_sample
 
@@ -17,8 +14,8 @@ import numpy as np
 profile_length = np.ediff1d(URM_train.indptr)
 block_size = int(len(profile_length)*0.25)
 
-start_pos = 0 * block_size
-end_pos = min(1 * block_size, len(profile_length))
+start_pos = 3 * block_size
+end_pos = min(4 * block_size, len(profile_length))
 sorted_users = np.argsort(profile_length)
 
 users_in_group = sorted_users[start_pos:end_pos]
@@ -47,22 +44,22 @@ p3alpha_recommender.fit(topK=228,alpha=0.512,implicit=True)
 rp3betaCBF_recommender = RP3betaCBFRecommender(URM_train=URM_train, ICM_train=ICM_all, verbose=False)
 rp3betaCBF_recommender.fit(topK=63,alpha=0.221,beta=0.341,implicit=False)
 
-recommender_worst = SimilarityMergedHybridRecommender(URM_train=URM_train,CFRecommender=p3alpha_recommender,CBFRecommender=rp3betaCBF_recommender,verbose=False)
+recommender_best = SimilarityMergedHybridRecommender(URM_train=URM_train,CFRecommender=p3alpha_recommender,CBFRecommender=rp3betaCBF_recommender,verbose=False)
 
 tuning_params = {
     "alpha": (0.1,0.9),
-    "topKWorst25":(10,500)
+    "topKBest25":(10,500)
 }
 
 
 def BO_func(
         alpha,
-        topKWorst25,
+        topKBest25,
 ):
 
-    recommender_worst.fit(topK=int(topKWorst25), alpha=alpha)
+    recommender_best.fit(topK=int(topKBest25), alpha=alpha)
 
-    result_dict, _ = evaluator_validation.evaluateRecommender(recommender_worst)
+    result_dict, _ = evaluator_validation.evaluateRecommender(recommender_best)
 
     return result_dict[10]["MAP"]
 
@@ -81,5 +78,5 @@ optimizer.maximize(
 
 import json
 
-with open("logs/" + recommender_worst.RECOMMENDER_NAME + "_worst25_logs.json", 'w') as json_file:
+with open("logs/" + recommender_best.RECOMMENDER_NAME + "_best25_logs.json", 'w') as json_file:
     json.dump(optimizer.max, json_file)
