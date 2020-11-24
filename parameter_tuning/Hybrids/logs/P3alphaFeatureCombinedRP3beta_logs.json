@@ -1,12 +1,1 @@
-{
-  "target": 0.07496,
-  "params": {
-    "cbfAlpha": 0.4228,
-    "cbfBeta": 0.1918,
-    "cbfTopK": 586.2,
-    "cfAlpha": 0.5017,
-    "cfTopK": 221.0,
-    "hybridAlpha": 0.2222,
-    "hybridTopK": 354.8
-  }
-}
+{"target": 0.07497315684803703, "params": {"cbfAlpha": 0.42658191175355076, "cbfBeta": 0.2284685880641364, "cbfTopK": 525.3588205773788, "cfAlpha": 0.4729294763382114, "cfTopK": 212.8832860130684, "hybridAlpha": 0.2324902889610141, "hybridTopK": 482.3259592432915}}
