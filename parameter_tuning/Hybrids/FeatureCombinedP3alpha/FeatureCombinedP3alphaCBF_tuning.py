@@ -51,7 +51,7 @@ def BO_func(
         topK
 ):
     for recommender in p3alphaCBF_recommenders:
-        recommender.fit(alpha=alpha, topK=int(topK), implicit=True)
+        recommender.fit(alpha=alpha, topK=int(topK), implicit=False)
 
     result = evaluator_validation.evaluateRecommender(p3alphaCBF_recommenders)
     results.append(result)
