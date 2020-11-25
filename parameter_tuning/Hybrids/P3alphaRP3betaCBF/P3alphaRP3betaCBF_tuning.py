@@ -113,11 +113,6 @@ recommender.fit(
     alpha=hyperparameters['hybridAlpha']
 )
 
-optimizer.max['params']['cbfimplicit']=False
-optimizer.max['params']['cfimplicit']=True
-optimizer.max['params']['cbfTopK']=int(optimizer.max['params']['cbfTopK'])
-optimizer.max['params']['cfTopK']=int(optimizer.max['params']['cfTopK'])
-optimizer.max['params']['hybridTopK']=int(optimizer.max['params']['hybridTopK'])
 import json
 
 with open("logs/" + recommender.RECOMMENDER_NAME + "_logs.json", 'w') as json_file:
