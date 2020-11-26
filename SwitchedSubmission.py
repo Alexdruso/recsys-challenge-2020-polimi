@@ -25,6 +25,7 @@ users_in_best = set(sorted_users[end_normal+1:end_best])
 from src.Hybrid.SimilarityMergedHybridRecommender import SimilarityMergedHybridRecommender
 from src.GraphBased.P3alphaRecommender import P3alphaRecommender
 from src.GraphBased.RP3betaCBFRecommender import RP3betaCBFRecommender
+from src.KNN.ItemKNNCBFRecommender import ItemKNNCBFRecommender
 
 ICM_combined = combine(ICM=ICM_all, URM=URM_all)
 
@@ -46,14 +47,14 @@ rp3betaCBF_recommender.fit(topK=516,alpha=0.4227727007111746,beta=0.234828520656
 recommender_normal = SimilarityMergedHybridRecommender(URM_train=URM_all,CFRecommender=p3alpha_recommender,CBFRecommender=rp3betaCBF_recommender,verbose=False)
 recommender_normal.fit(topK=456,alpha= 0.13589376902040495)
 
-p3alpha_recommender = P3alphaRecommender(URM_train=URM_all, verbose=False)
-p3alpha_recommender.fit(topK=210,alpha=0.45,implicit=True)
+p3alpha_recommender = ItemKNNCBFRecommender(URM_train=URM_all, ICM_train=ICM_combined)
+p3alpha_recommender.fit(shrink=135, topK=983,similarity='cosine', feature_weighting='BM25')
 
 rp3betaCBF_recommender = RP3betaCBFRecommender(URM_train=URM_all, ICM_train=ICM_combined, verbose=False)
-rp3betaCBF_recommender.fit(topK=539,alpha=0.5,beta=0.3,implicit=False)
+rp3betaCBF_recommender.fit(topK=577,alpha=0.448,beta=0.2612,implicit=False)
 
 recommender_best = SimilarityMergedHybridRecommender(URM_train=URM_all,CFRecommender=p3alpha_recommender,CBFRecommender=rp3betaCBF_recommender,verbose=False)
-recommender_best.fit(topK=951, alpha=0.1,)
+recommender_best.fit(topK=872, alpha=0.2776,)
 
 import pandas as pd
 import csv
