@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     for subfolder_to_compile in subfolder_to_compile_list:
         if subfolder_to_compile == "Cython_examples":
-            cython_file_list.extend(glob.glob('src/{}/*.pyx'.format(subfolder_to_compile), recursive=True))
+            cython_file_list.extend(glob.glob('{}/*.pyx'.format(subfolder_to_compile), recursive=True))
         else:
             cython_file_list.extend(glob.glob('src/{}/Cython/*.pyx'.format(subfolder_to_compile), recursive=True))
 
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     print("run_compile_all_cython: All files will be compiled using your current python environment: '{}'".format(
         sys.executable))
 
-    save_folder_path = "./result_experiments/"
+    save_folder_path = "src/result_experiments/"
     log_file_path = save_folder_path + "run_compile_all_cython.txt"
 
     # If directory does not exist, create

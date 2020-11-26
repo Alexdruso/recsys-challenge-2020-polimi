@@ -16,9 +16,10 @@ def run_compile_subprocess(file_subfolder, file_to_compile_list):
     current_python_path = sys.executable
 
     compile_script_absolute_path = os.getcwd() + '\src\CythonCompiler\compile_script.py'
-    file_subfolder_absolute_path = os.getcwd() + '\src\ ' + file_subfolder
+    file_subfolder_absolute_path = os.getcwd() +'/'+ file_subfolder
 
     print(compile_script_absolute_path)
+    print(file_subfolder_absolute_path)
     print(file_to_compile_list)
 
     for file_to_compile in file_to_compile_list:

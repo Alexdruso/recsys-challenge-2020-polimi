@@ -61,25 +61,12 @@ for index in range(len(URMs_train)):
         )
     )
 
-    p3alpha_recommenders[index].fit(
-        topK=int(210.0),
-        alpha=0.45,
-        implicit=True
-    )
-
     rp3betaCombined_recommenders.append(
         RP3betaCBFRecommender(
             URM_train=URMs_train[index],
             ICM_train=ICMs_combined[index],
             verbose=False
         )
-    )
-
-    rp3betaCombined_recommenders[index].fit(
-        topK=int(539.1371470169497),
-        alpha=0.5,
-        beta=0.3,
-        implicit=False
     )
 
     rp3betaCBF_recommenders.append(
@@ -90,21 +77,15 @@ for index in range(len(URMs_train)):
         )
     )
 
-    rp3betaCBF_recommenders[index].fit(
-        topK=int(58.16144182493173),
-        alpha=0.26520214286626453,
-        beta=0.36456352256640157,
-        implicit=False
-    )
-
-    hybrid1Recommenders.append(SimilarityMergedHybridRecommender(
-        URM_train=URMs_train[index],
-        CFRecommender=rp3betaCombined_recommenders[index],
-        CBFRecommender=p3alpha_recommenders[index],
-        verbose=False
-    )
-    )
 tuning_params = {
+    "cfTopK": (200, 300),
+    "cfAlpha": (0.4, 0.5),
+    "featureCombinedTopK": (500, 600),
+    "featureCombinedAlpha": (0.45, 0.55),
+    "featureCombinedBeta": (0.25, 0.35),
+    "cbfAlpha": (0.25, 0.3),
+    "cbfBeta": (0.35, 0.45),
+    "cbfTopK": (10, 100),
     "hybrid1TopK": (10, 1000),
     "hybrid1Alpha": (0.1, 0.3),
     "hybrid2TopK": (10, 1000),
@@ -113,6 +94,14 @@ tuning_params = {
 
 results = []
 def BO_func(
+        cfTopK,
+        cfAlpha,
+        featureCombinedTopK,
+        featureCombinedAlpha,
+        featureCombinedBeta,
+        cbfTopK,
+        cbfAlpha,
+        cbfBeta,
         hybrid1TopK,
         hybrid1Alpha,
         hybrid2TopK,
@@ -122,12 +111,38 @@ def BO_func(
     recommenders = []
     for index in range(len(URMs_train)):
 
+        p3alpha_recommenders[index].fit(
+            topK=int(cfTopK),
+            alpha=cfAlpha,
+            implicit=True
+        )
+
+        rp3betaCombined_recommenders[index].fit(
+            topK=int(featureCombinedTopK),
+            alpha=featureCombinedAlpha,
+            beta=featureCombinedBeta,
+            implicit=False
+        )
+
+        rp3betaCBF_recommenders[index].fit(
+            topK=int(cbfTopK),
+            alpha=cbfAlpha,
+            beta=cbfBeta,
+            implicit=False
+        )
+
+        hybrid1Recommenders.append(SimilarityMergedHybridRecommender(
+            URM_train=URMs_train[index],
+            CFRecommender=rp3betaCombined_recommenders[index],
+            CBFRecommender=p3alpha_recommenders[index],
+            verbose=False
+            )
+        )
 
         hybrid1Recommenders[index].fit(
             topK=int(hybrid1TopK),
             alpha=hybrid1Alpha
         )
-
         recommender = SimilarityMergedHybridRecommender(
             URM_train=URMs_train[index],
             CFRecommender=hybrid1Recommenders[index],

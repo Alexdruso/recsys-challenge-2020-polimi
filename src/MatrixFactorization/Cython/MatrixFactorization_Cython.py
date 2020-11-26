@@ -6,13 +6,13 @@ Created on 07/09/17
 @author: Maurizio Ferrari Dacrema
 """
 
+import sys
+
+import numpy as np
+
 from ...Base.BaseMatrixFactorizationRecommender import BaseMatrixFactorizationRecommender
 from ...Base.Incremental_Training_Early_Stopping import Incremental_Training_Early_Stopping
-from ...Base.Recommender_utils import check_matrix
-
 from ...CythonCompiler.run_compile_subprocess import run_compile_subprocess
-import os, sys
-import numpy as np
 
 
 class _MatrixFactorization_Cython(BaseMatrixFactorizationRecommender, Incremental_Training_Early_Stopping):
