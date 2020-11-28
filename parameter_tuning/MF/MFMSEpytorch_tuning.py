@@ -28,27 +28,29 @@ for index in range(len(URMs_train)):
 
 
 tuning_params = {
-    "num_factors": (50, 500)
+    "num_factors": (50, 500),
+    "batch_size":(1,1024)
 }
 
 results = []
 
 def BO_func(
-        num_factors
+        num_factors,
+        batch_size
 ):
     for index in range(len(recommenders)):
         recommenders[index].fit(
-            epochs=1000,
+            epochs=1500,
             num_factors=int(num_factors),
             learning_rate=1e-3,
-            batch_size=700,
+            batch_size=int(batch_size),
             **{
                 'epochs_min' : 0,
                 'evaluator_object' : evaluator_validation.evaluator_list[index],
                 'stop_on_validation' : True,
-                'validation_every_n' : 10,
+                'validation_every_n' : 5,
                 'validation_metric' : 'MAP',
-                'lower_validations_allowed' : 3
+                'lower_validations_allowed' : 5
             }
         )
 
@@ -76,24 +78,3 @@ import json
 with open("logs/" + recommenders[0].RECOMMENDER_NAME + "_logs.json", 'w') as json_file:
     json.dump(optimizer.max, json_file)
 
-from src.Base.Evaluation.k_fold_significance_test import compute_k_fold_significance
-
-for index in range(len(recommenders)):
-    recommenders[index].fit(
-            epochs=1000,
-            num_factors=int(optimizer.max["params"]["num_factors"]),
-            learning_rate=1e-3,
-            batch_size=700,
-            **{
-                'epochs_min' : 0,
-                'evaluator_object' : evaluator_validation.evaluator_list[index],
-                'stop_on_validation' : True,
-                'validation_every_n' : 10,
-                'validation_metric' : 'MAP',
-                'lower_validations_allowed' : 3
-            }
-    )
-
-result = evaluator_validation.evaluateRecommender(recommenders)
-
-compute_k_fold_significance(result, *results)
