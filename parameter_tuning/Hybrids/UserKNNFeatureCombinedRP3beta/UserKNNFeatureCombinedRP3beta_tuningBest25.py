@@ -41,30 +41,19 @@ ICMs_combined = []
 for URM in URMs_train:
     ICMs_combined.append(combine(ICM=ICM_all, URM=URM))
 
-from src.Hybrid.SimilarityMergedHybridRecommender import SimilarityMergedHybridRecommender
-from src.GraphBased.P3alphaRecommender import P3alphaRecommender
+from src.Hybrid.MergedHybridRecommender import MergedHybridRecommender
+from src.KNN.UserKNNCFRecommender import UserKNNCFRecommender
 from src.GraphBased.RP3betaCBFRecommender import RP3betaCBFRecommender
 
 from bayes_opt import BayesianOptimization
 
-p3alpha_recommenders = []
+userknn_recommender = []
 rp3betaCBF_recommenders = []
-rp3betaCombined_recommenders = []
-hybrid1Recommenders = []
 
 for index in range(len(URMs_train)):
-
-    p3alpha_recommenders.append(
-        P3alphaRecommender(
+    userknn_recommender.append(
+        UserKNNCFRecommender(
             URM_train=URMs_train[index],
-            verbose=False
-        )
-    )
-
-    rp3betaCombined_recommenders.append(
-        RP3betaCBFRecommender(
-            URM_train=URMs_train[index],
-            ICM_train=ICMs_combined[index],
             verbose=False
         )
     )
@@ -72,56 +61,39 @@ for index in range(len(URMs_train)):
     rp3betaCBF_recommenders.append(
         RP3betaCBFRecommender(
             URM_train=URMs_train[index],
-            ICM_train=ICM_all,
+            ICM_train=ICMs_combined[index],
             verbose=False
         )
     )
 
 tuning_params = {
-    "cfTopK": (200, 300),
-    "cfAlpha": (0.4, 0.5),
-    "featureCombinedTopK": (500, 600),
-    "featureCombinedAlpha": (0.45, 0.55),
-    "featureCombinedBeta": (0.25, 0.35),
-    "cbfAlpha": (0.25, 0.3),
-    "cbfBeta": (0.35, 0.45),
-    "cbfTopK": (10, 100),
-    "hybrid1TopK": (10, 900),
-    "hybrid1Alpha": (0.1, 0.9),
-    "hybrid2TopK": (10, 1000),
-    "hybrid2Alpha": (0.1, 0.9)
+    "cfTopK": (510, 530),
+    "cfShrink": (40, 60),
+    "cbfTopK": (500, 600),
+    "cbfAlpha": (0.4, 0.5),
+    "cbfBeta": (0.2, 0.3),
+    "hybridAlpha": (0.1, 0.9)
 }
 
 results = []
+
+recommenders = []
+
 def BO_func(
         cfTopK,
-        cfAlpha,
-        featureCombinedTopK,
-        featureCombinedAlpha,
-        featureCombinedBeta,
+        cfShrink,
         cbfTopK,
         cbfAlpha,
         cbfBeta,
-        hybrid1TopK,
-        hybrid1Alpha,
-        hybrid2TopK,
-        hybrid2Alpha
+        hybridAlpha
 ):
-
     recommenders = []
     for index in range(len(URMs_train)):
-
-        p3alpha_recommenders[index].fit(
+        userknn_recommender[index].fit(
             topK=int(cfTopK),
-            alpha=cfAlpha,
-            implicit=True
-        )
-
-        rp3betaCombined_recommenders[index].fit(
-            topK=int(featureCombinedTopK),
-            alpha=featureCombinedAlpha,
-            beta=featureCombinedBeta,
-            implicit=False
+            shrink=cfShrink,
+            similarity='cosine',
+            feature_weighting='TF-IDF'
         )
 
         rp3betaCBF_recommenders[index].fit(
@@ -131,28 +103,15 @@ def BO_func(
             implicit=False
         )
 
-        hybrid1Recommenders.append(SimilarityMergedHybridRecommender(
+        recommender = MergedHybridRecommender(
             URM_train=URMs_train[index],
-            CFRecommender=rp3betaCombined_recommenders[index],
-            CBFRecommender=p3alpha_recommenders[index],
-            verbose=False
-            )
-        )
-
-        hybrid1Recommenders[index].fit(
-            topK=int(hybrid1TopK),
-            alpha=hybrid1Alpha
-        )
-        recommender = SimilarityMergedHybridRecommender(
-            URM_train=URMs_train[index],
-            CFRecommender=hybrid1Recommenders[index],
-            CBFRecommender=rp3betaCBF_recommenders[index],
+            recommender1=userknn_recommender[index],
+            recommender2=rp3betaCBF_recommenders[index],
             verbose=False
         )
 
         recommender.fit(
-            topK=int(hybrid2TopK),
-            alpha=hybrid2Alpha
+            alpha=hybridAlpha
         )
 
         recommenders.append(recommender)
@@ -170,13 +129,11 @@ optimizer = BayesianOptimization(
 )
 
 optimizer.maximize(
-    init_points=30,
-    n_iter=20,
+    init_points=10,
+    n_iter=18,
 )
 
 import json
 
-with open("logs/P3alphaFeatureCombinedRP3betaRP3betaCBF_best25_logs.json", 'w') as json_file:
+with open("logs/" + recommenders[0].RECOMMENDER_NAME + "_best25_logs.json", 'w') as json_file:
     json.dump(optimizer.max, json_file)
-
-

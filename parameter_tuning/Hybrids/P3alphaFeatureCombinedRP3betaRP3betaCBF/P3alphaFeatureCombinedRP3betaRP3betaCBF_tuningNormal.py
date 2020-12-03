@@ -86,8 +86,8 @@ tuning_params = {
     "cbfAlpha": (0.25, 0.3),
     "cbfBeta": (0.35, 0.45),
     "cbfTopK": (10, 100),
-    "hybrid1TopK": (10, 1000),
-    "hybrid1Alpha": (0.1, 0.3),
+    "hybrid1TopK": (10, 900),
+    "hybrid1Alpha": (0.1, 0.9),
     "hybrid2TopK": (10, 1000),
     "hybrid2Alpha": (0.1, 0.9)
 }
@@ -171,7 +171,7 @@ optimizer = BayesianOptimization(
 )
 
 optimizer.maximize(
-    init_points=15,
+    init_points=30,
     n_iter=20,
 )
 

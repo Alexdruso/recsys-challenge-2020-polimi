@@ -1,5 +1,5 @@
-Compiling [1/3]: MatrixFactorization_Cython_Epoch.pyx... PASS
-Compiling [2/3]: Compute_Similarity_Cython.pyx... PASS
+Compiling [1/3]: MatrixFactorization_Cython_Epoch.pyx... FAIL: Command 'C:\Users\ALEXDRUSO\Anaconda3\envs\RecSysFramework\python.exe C:\Users\ALEXDRUSO\Desktop\RecSysChallenge2020\src\CythonCompiler\compile_script.py MatrixFactorization_Cython_Epoch.pyx build_ext --inplace' returned non-zero exit status 1.
+Compiling [2/3]: Compute_Similarity_Cython.pyx... FAIL: Command 'C:\Users\ALEXDRUSO\Anaconda3\envs\RecSysFramework\python.exe C:\Users\ALEXDRUSO\Desktop\RecSysChallenge2020\src\CythonCompiler\compile_script.py Compute_Similarity_Cython.pyx build_ext --inplace' returned non-zero exit status 1.
 Compiling [3/3]: SLIM_BPR_Cython_Epoch.pyx... FAIL: Command 'C:\Users\ALEXDRUSO\Anaconda3\envs\RecSysFramework\python.exe C:\Users\ALEXDRUSO\Desktop\RecSysChallenge2020\src\CythonCompiler\compile_script.py SLIM_BPR_Cython_Epoch.pyx build_ext --inplace' returned non-zero exit status 1.
-run_compile_all_cython: Compilation finished. FAILS 1/3.
+run_compile_all_cython: Compilation finished. FAILS 3/3.
 Compilation log can be found here: 'src/result_experiments/run_compile_all_cython.txt'
