@@ -1,7 +1,6 @@
 from src.Base.Evaluation.K_Fold_Evaluator import K_Fold_Evaluator_MAP
 from src.Utils.load_ICM import load_ICM
 from src.Utils.load_URM import load_URM
-from src.Utils.ICM_preprocessing import *
 
 URM_all = load_URM("../../../in/data_train.csv")
 ICM_all = load_ICM("../../../in/data_ICM_title_abstract.csv")
@@ -18,21 +17,17 @@ for k in range(5):
 
 evaluator_validation = K_Fold_Evaluator_MAP(URMs_validation, cutoff_list=[10], verbose=False)
 
-ICMs_combined = []
-for URM in URMs_train:
-    ICMs_combined.append(combine(ICM=ICM_all, URM=URM))
-
-from src.GraphBased.RP3betaCBFRecommender import RP3betaCBFRecommender
+from src.GraphBased.FeatureCombinedRP3betaRecommender import FeatureCombinedRP3betaRecommender
 
 from bayes_opt import BayesianOptimization
 
-rp3betaCBF_recommenders = []
+featureCombinedRp3beta_recommenders = []
 
 for index in range(len(URMs_train)):
-    rp3betaCBF_recommenders.append(
-        RP3betaCBFRecommender(
+    featureCombinedRp3beta_recommenders.append(
+        FeatureCombinedRP3betaRecommender(
             URM_train=URMs_train[index],
-            ICM_train=ICMs_combined[index],
+            ICM_train=ICM_all,
             verbose=False
         )
     )
@@ -40,6 +35,7 @@ for index in range(len(URMs_train)):
 tuning_params = {
     "alpha": (0.1, 0.9),
     "beta": (0.1, 0.9),
+    "gamma": (0.1,1.9),
     "topK": (10, 600)
 }
 
@@ -49,12 +45,13 @@ results = []
 def BO_func(
         alpha,
         beta,
+        gamma,
         topK
 ):
-    for recommender in rp3betaCBF_recommenders:
-        recommender.fit(alpha=alpha, beta=beta, topK=int(topK), implicit=False)
+    for recommender in featureCombinedRp3beta_recommenders:
+        recommender.fit(alpha=alpha, beta=beta, gamma=gamma, topK=int(topK), implicit=False)
 
-    result = evaluator_validation.evaluateRecommender(rp3betaCBF_recommenders)
+    result = evaluator_validation.evaluateRecommender(featureCombinedRp3beta_recommenders)
     results.append(result)
     return sum(result) / len(result)
 
@@ -67,22 +64,12 @@ optimizer = BayesianOptimization(
 )
 
 optimizer.maximize(
-    init_points=20,
-    n_iter=8,
+    init_points=30,
+    n_iter=20,
 )
 
 
 import json
 
-with open("logs/FeatureCombined" + rp3betaCBF_recommenders[0].RECOMMENDER_NAME + "_logs.json", 'w') as json_file:
+with open("logs/" + featureCombinedRp3beta_recommenders[0].RECOMMENDER_NAME + "_logs.json", 'w') as json_file:
     json.dump(optimizer.max, json_file)
-
-from src.Base.Evaluation.k_fold_significance_test import compute_k_fold_significance
-
-for recommender in rp3betaCBF_recommenders:
-    recommender.fit(alpha=optimizer.max['params']['alpha'], beta=optimizer.max['params']['beta'],
-                    topK=int(optimizer.max['params']['topK']), implicit=False)
-
-result = evaluator_validation.evaluateRecommender(rp3betaCBF_recommenders)
-
-compute_k_fold_significance(result, *results)

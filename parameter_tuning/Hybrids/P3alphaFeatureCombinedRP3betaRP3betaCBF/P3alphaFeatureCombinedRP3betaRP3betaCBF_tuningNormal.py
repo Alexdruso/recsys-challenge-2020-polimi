@@ -37,6 +37,7 @@ for k in range(5):
 evaluator_validation = K_Fold_Evaluator_MAP(URMs_validation, cutoff_list=[10], verbose=False,
                                             ignore_users_list=ignore_users_list)
 
+
 ICMs_combined = []
 for URM in URMs_train:
     ICMs_combined.append(combine(ICM=ICM_all, URM=URM))
@@ -76,16 +77,15 @@ for index in range(len(URMs_train)):
             verbose=False
         )
     )
-
 tuning_params = {
     "cfTopK": (200, 300),
-    "cfAlpha": (0.5, 0.6),
-    "featureCombinedTopK": (500, 600),
-    "featureCombinedAlpha": (0.4, 0.5),
-    "featureCombinedBeta": (0.2, 0.3),
-    "cbfAlpha": (0.25, 0.3),
-    "cbfBeta": (0.35, 0.45),
+    "cfAlpha": (0.45, 0.52),
+    "fcTopK": (500, 600),
+    "fcAlpha": (0.4, 0.5),
+    "fcBeta": (0.2, 0.3),
     "cbfTopK": (10, 100),
+    "cbfAlpha": (0.2, 0.3),
+    "cbfBeta": (0.3, 0.4),
     "hybrid1TopK": (10, 900),
     "hybrid1Alpha": (0.1, 0.9),
     "hybrid2TopK": (10, 1000),
@@ -96,9 +96,9 @@ results = []
 def BO_func(
         cfTopK,
         cfAlpha,
-        featureCombinedTopK,
-        featureCombinedAlpha,
-        featureCombinedBeta,
+        fcTopK,
+        fcAlpha,
+        fcBeta,
         cbfTopK,
         cbfAlpha,
         cbfBeta,
@@ -118,9 +118,9 @@ def BO_func(
         )
 
         rp3betaCombined_recommenders[index].fit(
-            topK=int(featureCombinedTopK),
-            alpha=featureCombinedAlpha,
-            beta=featureCombinedBeta,
+            topK=int(fcTopK),
+            alpha=fcAlpha,
+            beta=fcBeta,
             implicit=False
         )
 
@@ -143,6 +143,7 @@ def BO_func(
             topK=int(hybrid1TopK),
             alpha=hybrid1Alpha
         )
+
         recommender = SimilarityMergedHybridRecommender(
             URM_train=URMs_train[index],
             CFRecommender=hybrid1Recommenders[index],
@@ -160,7 +161,6 @@ def BO_func(
     result = evaluator_validation.evaluateRecommender(recommenders)
     results.append(result)
     return sum(result) / len(result)
-
 
 
 optimizer = BayesianOptimization(
