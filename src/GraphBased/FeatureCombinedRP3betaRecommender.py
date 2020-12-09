@@ -22,8 +22,8 @@ class FeatureCombinedRP3betaRecommender(BaseItemSimilarityMatrixRecommender):
 
     def fit(self, topK=100, alpha=1., beta=0.6, gamma=1.0, min_rating=0, implicit=False, normalize_similarity=False, binarize= False):
         ICMcombined = combine(
-            ICM=(2-gamma)*self.ICM_train,
-            URM=gamma * self.URM_train
+            ICM=gamma*self.ICM_train,
+            URM=self.URM_train
         )
 
         if binarize:

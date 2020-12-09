@@ -2,6 +2,7 @@ from src.Base.Evaluation.K_Fold_Evaluator import K_Fold_Evaluator_MAP
 from src.SLIM_BPR.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
 from src.Utils.load_ICM import load_ICM
 from src.Utils.load_URM import load_URM
+from src.Utils.ICM_preprocessing import *
 
 URM_all = load_URM("../../in/data_train.csv")
 ICM_all = load_ICM("../../in/data_ICM_title_abstract.csv")
@@ -18,20 +19,20 @@ for k in range(5):
 
 evaluator_validation = K_Fold_Evaluator_MAP(URMs_validation, cutoff_list=[10], verbose=False)
 
+ICMs_combined = []
+for URM in URMs_train:
+    ICMs_combined.append(combine(ICM=ICM_all, URM=URM))
+
 
 recommenders = []
 
-for index in range(len(URMs_train)):
-    recommenders.append(
-        SLIM_BPR_Cython(URM_train=URMs_train[index])
-    )
-
 
 tuning_params = {
-    "batch_size":(128, 1024),
-    "lambda_i":(1e-5, 1e-2),
-    "lambda_j":(1e-5, 1e-2),
-    "topK":(100,1000),
+    "batch_size": (128, 1024),
+    "lambda_i": (1e-5, 1e-2),
+    "lambda_j": (1e-5, 1e-2),
+    "topK": (100, 1000),
+    "epochs": (10, 500)
     #"gamma":(1e-5, 1e-2),
     #"beta_1":(1e-5, 1e-2),
     #"beta_2":(1e-5, 1e-2)
@@ -43,11 +44,21 @@ def BO_func(
         batch_size,
         lambda_i,
         lambda_j,
-        topK
+        topK,
+        epochs
 ):
-    for index in range(len(recommenders)):
+    recommenders = []
+
+    for index in range(len(URMs_train)):
+        recommenders.append(
+            SLIM_BPR_Cython(
+                URM_train=ICMs_combined[index].T,
+                verbose=False
+            )
+        )
+
         recommenders[index].fit(
-            epochs=1500,
+            epochs=int(epochs),
             positive_threshold_BPR=None,
             train_with_sparse_weights=None,
             symmetric=False,
@@ -60,16 +71,10 @@ def BO_func(
             sgd_mode='adagrad',
             #gamma=,
             #beta_1=,
-            #beta_2=,
-            **{
-                'epochs_min' : 0,
-                'evaluator_object' : evaluator_validation.evaluator_list[index],
-                'stop_on_validation' : True,
-                'validation_every_n' : 5,
-                'validation_metric' : 'MAP',
-                'lower_validations_allowed' : 3
-            }
+            #beta_2=
         )
+
+        recommenders[index].URM_train = URMs_train[index]
 
     result = evaluator_validation.evaluateRecommender(recommenders)
     results.append(result)
@@ -92,6 +97,5 @@ optimizer.maximize(
 
 import json
 
-with open("logs/" + recommenders[0].RECOMMENDER_NAME + "_logs.json", 'w') as json_file:
+with open("logs/FeatureCombined" + recommenders[0].RECOMMENDER_NAME + "_logs.json", 'w') as json_file:
     json.dump(optimizer.max, json_file)
-

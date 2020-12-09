@@ -45,32 +45,32 @@ rp3betaCBF_recommender= RP3betaCBFRecommender(
 )
 
 rp3betaCBF_recommender.fit(
-    topK=int(58.16144182493173),
-    alpha=0.26520214286626453,
-    beta=0.36456352256640157,
+    topK=int(117.1),
+    alpha=0.9882,
+    beta=0.7703,
     implicit=False
 )
 
-itemKNN_recommender= ItemKNNCFRecommender(
-    URM_train=URM_all,
-    verbose=False
-)
-
-itemKNN_recommender.fit(
-    topK=100,
-    shrink=50
-)
-
-pureSVD_recommender= PureSVDItemRecommender(
-    URM_train=URM_all,
-    verbose=False
-)
-
-
-pureSVD_recommender.fit(
-    num_factors=772,
-    topK= 599
-)
+# itemKNN_recommender= ItemKNNCFRecommender(
+#     URM_train=URM_all,
+#     verbose=False
+# )
+#
+# itemKNN_recommender.fit(
+#     topK=100,
+#     shrink=50
+# )
+#
+# pureSVD_recommender= PureSVDItemRecommender(
+#     URM_train=URM_all,
+#     verbose=False
+# )
+#
+#
+# pureSVD_recommender.fit(
+#     num_factors=772,
+#     topK= 599
+# )
 
 recommender = GeneralizedSimilarityMergedHybridRecommender(
     URM_train=URM_all,
@@ -78,24 +78,24 @@ recommender = GeneralizedSimilarityMergedHybridRecommender(
         p3alpha_recommender,
         rp3betaCombined_recommender,
         rp3betaCBF_recommender,
-        itemKNN_recommender,
-        pureSVD_recommender
+        # itemKNN_recommender,
+        # pureSVD_recommender
     ],
         verbose=False
 )
 
 recommender.fit(
     topKs=[
-        int(725.2251651408158),
-        int(497.73913463467255),
-        int(501.3131158958155),
-        int(479.46922161562503)
+        int(687.3),
+        int(976.4),
+        # int(501.3131158958155),
+        # int(479.46922161562503)
     ],
     alphas=[
-        0.5479200839179512,
-        0.6137453754315466,
-        0.7544056871377216,
-        0.6162225526206547
+        0.1198,
+        0.9101,
+        # 0.7544056871377216,
+        # 0.6162225526206547
     ]
 )
 

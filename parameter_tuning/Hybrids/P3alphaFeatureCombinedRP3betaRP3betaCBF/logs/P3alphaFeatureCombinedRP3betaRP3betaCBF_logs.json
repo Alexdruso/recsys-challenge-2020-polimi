@@ -1,1 +1,1 @@
-{"target": 0.07516675826587407, "params": {"hybrid1Alpha": 0.49072895103586334, "hybrid1TopK": 615.6264242736193, "hybrid2Alpha": 0.7127262851842525, "hybrid2TopK": 523.2338079942139}}
+{"target": 0.07618, "params": {"cbfAlpha":0.5495, "cbfBeta":0.7075, "cbfTopK":485.4,"hybrid1Alpha": 0.1907, "hybrid1TopK": 471.7, "hybrid2Alpha": 0.9386, "hybrid2TopK": 343.1}}

@@ -35,7 +35,7 @@ for index in range(len(URMs_train)):
 tuning_params = {
     "alpha": (0.1, 0.9),
     "beta": (0.1, 0.9),
-    "gamma": (0.1,1.9),
+    "gamma": (0.1,100),
     "topK": (10, 600)
 }
 
@@ -64,8 +64,8 @@ optimizer = BayesianOptimization(
 )
 
 optimizer.maximize(
-    init_points=30,
-    n_iter=20,
+    init_points=50,
+    n_iter=50,
 )
 
 
