@@ -23,6 +23,7 @@ users_in_best = set(sorted_users[end_normal+1:end_best])
 
 
 from src.Hybrid.SimilarityMergedHybridRecommender import SimilarityMergedHybridRecommender
+from src.Hybrid.GeneralizedSimilarityMergedHybridRecommender import GeneralizedSimilarityMergedHybridRecommender
 from src.GraphBased.P3alphaRecommender import P3alphaRecommender
 from src.GraphBased.RP3betaCBFRecommender import RP3betaCBFRecommender
 from src.KNN.ItemKNNCBFRecommender import ItemKNNCBFRecommender
@@ -39,13 +40,33 @@ recommender_worst = SimilarityMergedHybridRecommender(URM_train=URM_all,CFRecomm
 recommender_worst.fit(topK=481, alpha=0.1)
 
 p3alpha_recommender = P3alphaRecommender(URM_train=URM_all, verbose=False)
-p3alpha_recommender.fit(topK=229,alpha=0.5059173017438977,implicit=True)
+p3alpha_recommender.fit(topK=213,alpha=0.4729294763382114,implicit=True)
 
-rp3betaCBF_recommender = RP3betaCBFRecommender(URM_train=URM_all, ICM_train=ICM_combined, verbose=False)
-rp3betaCBF_recommender.fit(topK=516,alpha=0.4227727007111746,beta=0.23482852065641355,implicit=False)
+rp3betaCombined_recommender = RP3betaCBFRecommender(URM_train=URM_all, ICM_train=ICM_combined, verbose=False)
+rp3betaCombined_recommender.fit(topK=int(525.3588205773788),alpha=0.42658191175355076,beta=0.2284685880641364,implicit=False)
 
-recommender_normal = SimilarityMergedHybridRecommender(URM_train=URM_all,CFRecommender=p3alpha_recommender,CBFRecommender=rp3betaCBF_recommender,verbose=False)
-recommender_normal.fit(topK=456,alpha= 0.13589376902040495)
+rp3betaCBF_recommender = RP3betaCBFRecommender(URM_train=URM_all, ICM_train=ICM_all, verbose=False)
+rp3betaCBF_recommender.fit(topK=int(188.6),alpha=0.1324,beta=0.981,implicit=False)
+
+recommender_normal = GeneralizedSimilarityMergedHybridRecommender(
+            URM_train=URM_all,
+            similarityRecommenders=[
+                p3alpha_recommender,
+                rp3betaCombined_recommender,
+                rp3betaCBF_recommender
+            ],
+            verbose=False
+        )
+recommender_normal.fit(
+        topKs=[
+            int(482.3259592432915),
+            int(872.7)
+        ],
+        alphas=[
+            0.2324902889610141,
+            0.7876
+        ]
+    )
 
 p3alpha_recommender = ItemKNNCBFRecommender(URM_train=URM_all, ICM_train=ICM_combined)
 p3alpha_recommender.fit(shrink=135, topK=983,similarity='cosine', feature_weighting='BM25')
