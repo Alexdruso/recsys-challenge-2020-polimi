@@ -74,8 +74,6 @@ for index in range(len(URMs_train)):
     )
 
 tuning_params = {
-    "hybrid1TopK": (10, 738),
-    "hybrid1Alpha": (0, 1),
     "hybrid2TopK": (10, 1300),
     "hybrid2Alpha": (0, 1),
     "cbfAlpha": (0, 1),
@@ -88,8 +86,6 @@ def BO_func(
         cbfAlpha,
         cbfBeta,
         cbfTopK,
-        hybrid1TopK,
-        hybrid1Alpha,
         hybrid2TopK,
         hybrid2Alpha,
 ):
@@ -117,11 +113,11 @@ def BO_func(
 
         recommenders[index].fit(
             topKs=[
-                int(hybrid1TopK),
+                int(482.3259592432915),
                 int(hybrid2TopK)
                 ],
             alphas=[
-                hybrid1Alpha,
+                0.2324902889610141,
                 hybrid2Alpha
             ]
         )
