@@ -32,6 +32,7 @@ tuning_params = {
     "lambda_i":(1e-5, 1e-2),
     "lambda_j":(1e-5, 1e-2),
     "topK":(100,1000),
+    "epochs": (10, 100)
     #"gamma":(1e-5, 1e-2),
     #"beta_1":(1e-5, 1e-2),
     #"beta_2":(1e-5, 1e-2)
@@ -43,13 +44,14 @@ def BO_func(
         batch_size,
         lambda_i,
         lambda_j,
-        topK
+        topK,
+        epochs
 ):
     for index in range(len(recommenders)):
         recommenders[index].fit(
-            epochs=1500,
+            epochs=epochs,
             positive_threshold_BPR=None,
-            train_with_sparse_weights=None,
+            train_with_sparse_weights=True,
             symmetric=False,
             random_seed=None,
             batch_size=batch_size,
@@ -61,14 +63,6 @@ def BO_func(
             #gamma=,
             #beta_1=,
             #beta_2=,
-            **{
-                'epochs_min' : 0,
-                'evaluator_object' : evaluator_validation.evaluator_list[index],
-                'stop_on_validation' : True,
-                'validation_every_n' : 5,
-                'validation_metric' : 'MAP',
-                'lower_validations_allowed' : 3
-            }
         )
 
     result = evaluator_validation.evaluateRecommender(recommenders)
@@ -86,8 +80,8 @@ optimizer = BayesianOptimization(
 )
 
 optimizer.maximize(
-    init_points=3,
-    n_iter=2
+    init_points=10,
+    n_iter=5
 )
 
 import json

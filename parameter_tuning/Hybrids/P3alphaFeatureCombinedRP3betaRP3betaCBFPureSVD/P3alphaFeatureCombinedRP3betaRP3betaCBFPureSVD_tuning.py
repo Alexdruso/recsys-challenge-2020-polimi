@@ -23,10 +23,8 @@ for URM in URMs_train:
     ICMs_combined.append(combine(ICM=ICM_all, URM=URM))
 
 from src.Hybrid.GeneralizedSimilarityMergedHybridRecommender import GeneralizedSimilarityMergedHybridRecommender
-from src.Hybrid.MergedHybridRecommender import MergedHybridRecommender
 from src.GraphBased.P3alphaRecommender import P3alphaRecommender
 from src.GraphBased.RP3betaCBFRecommender import RP3betaCBFRecommender
-from src.KNN.ItemKNNCFRecommender import ItemKNNCFRecommender
 from src.MatrixFactorization.PureSVDRecommender import PureSVDItemRecommender
 
 from bayes_opt import BayesianOptimization
@@ -34,7 +32,7 @@ from bayes_opt import BayesianOptimization
 p3alpha_recommenders = []
 rp3betaCBF_recommenders = []
 rp3betaCombined_recommenders = []
-itemKNN_recommenders = []
+itemKNNCombined_recommenders = []
 pureSVD_recommenders = []
 recommenders = []
 
@@ -77,22 +75,10 @@ for index in range(len(URMs_train)):
     )
 
     rp3betaCBF_recommenders[index].fit(
-        topK=int(58.16144182493173),
-        alpha=0.26520214286626453,
-        beta=0.36456352256640157,
+        topK=int(188.6),
+        alpha=0.1324,
+        beta=0.981,
         implicit=False
-    )
-
-    itemKNN_recommenders.append(
-        ItemKNNCFRecommender(
-            URM_train=URMs_train[index],
-            verbose=False
-        )
-    )
-
-    itemKNN_recommenders[index].fit(
-        topK=100,
-        shrink=50
     )
 
     pureSVD_recommenders.append(
@@ -103,60 +89,46 @@ for index in range(len(URMs_train)):
     )
 
     pureSVD_recommenders[index].fit(
-        num_factors=772,
-        topK= 599
-    )
-
-    recommenders.append(
-        GeneralizedSimilarityMergedHybridRecommender(
-        URM_train=URMs_train[index],
-        similarityRecommenders=[
-            p3alpha_recommenders[index],
-            rp3betaCombined_recommenders[index],
-            rp3betaCBF_recommenders[index],
-            itemKNN_recommenders[index],
-            pureSVD_recommenders[index]
-        ],
-        verbose=False
-    )
+        topK=int(598.5049775587898),
+        num_factors= int(771.9537188909144)
     )
 tuning_params = {
-    "hybrid1TopK": (500, 738),
-    "hybrid1Alpha": (0.5, 0.8),
-    "hybrid2TopK": (425, 575),
-    "hybrid2Alpha": (0.55, 0.85),
-    "hybrid3TopK": (450, 650),
-    "hybrid3Alpha": (0.7, 1),
-    "hybrid4TopK": (450, 650),
-    "hybrid4Alpha": (0.55, 0.85)
+    "hybrid3TopK": (10, 1300),
+    "hybrid3Alpha": (0, 1)
 }
 
 results = []
 def BO_func(
-        hybrid1TopK,
-        hybrid1Alpha,
-        hybrid2TopK,
-        hybrid2Alpha,
         hybrid3TopK,
         hybrid3Alpha,
-        hybrid4TopK,
-        hybrid4Alpha
 ):
+    recommenders = []
 
     for index in range(len(URMs_train)):
 
+        recommenders.append(
+            GeneralizedSimilarityMergedHybridRecommender(
+                URM_train=URMs_train[index],
+                similarityRecommenders=[
+                    p3alpha_recommenders[index],
+                    rp3betaCombined_recommenders[index],
+                    rp3betaCBF_recommenders[index],
+                    pureSVD_recommenders[index]
+                ],
+                verbose=False
+            )
+        )
+
         recommenders[index].fit(
             topKs=[
-                int(hybrid1TopK),
-                int(hybrid2TopK),
-                int(hybrid3TopK),
-                int(hybrid4TopK)
+                int(482.3259592432915),
+                int(872.7),
+                int(hybrid3TopK)
                 ],
             alphas=[
-                hybrid1Alpha,
-                hybrid2Alpha,
-                hybrid3Alpha,
-                hybrid4Alpha
+                0.2324902889610141,
+                0.7876,
+                hybrid3Alpha
             ]
         )
 
@@ -179,7 +151,16 @@ optimizer.maximize(
 
 import json
 
-with open("logs/"+ recommenders[0].RECOMMENDER_NAME+"_logs.json", 'w') as json_file:
+recommender = GeneralizedSimilarityMergedHybridRecommender(
+                URM_train=URMs_train[0],
+                similarityRecommenders=[
+                    p3alpha_recommenders[0],
+                    rp3betaCombined_recommenders[0],
+                    rp3betaCBF_recommenders[0],
+                    pureSVD_recommenders[0]
+                ],
+                verbose=False
+            )
+
+with open("logs/"+ recommender.RECOMMENDER_NAME+"_logs.json", 'w') as json_file:
     json.dump(optimizer.max, json_file)
-
-

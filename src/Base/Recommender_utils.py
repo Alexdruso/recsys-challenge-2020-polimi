@@ -234,3 +234,68 @@ def get_unique_temp_folder(input_temp_folder_path):
     os.makedirs(progressive_temp_folder_name)
 
     return progressive_temp_folder_name
+
+
+def ratingMatrixTopK(item_weights, k=100, verbose=False):
+    """
+    The function selects the TopK most similar elements, column-wise
+
+    :param item_weights:
+    :param forceSparseOutput:
+    :param k:
+    :param verbose:
+    :param inplace: Default True, WARNING matrix will be modified
+    :return:
+    """
+
+    start_time = time.time()
+
+    if verbose:
+        print("Generating topK matrix")
+
+    nusers = item_weights.shape[0]
+    nitems = item_weights.shape[1]
+    k = min(k, nitems)
+
+    # for each column, keep only the top-k scored items
+    sparse_weights = not isinstance(item_weights, np.ndarray)
+
+    # iterate over each column and keep only the top-k similar items
+    data, cols_indices, rows_indptr = [], [], []
+
+    if sparse_weights:
+        item_weights = check_matrix(item_weights, format='csc', dtype=np.float32)
+    else:
+        column_index = np.arange(nitems, dtype=np.int32)
+
+    for user_idx in range(nusers):
+
+        rows_indptr.append(len(data))
+
+        if sparse_weights:
+            start_position = item_weights.indptr[user_idx]
+            end_position = item_weights.indptr[user_idx + 1]
+
+            row_data = item_weights.data[start_position:end_position]
+            column_index = item_weights.indices[start_position:end_position]
+
+        else:
+            column_data = item_weights[user_idx, :]
+
+        non_zero_data = row_data != 0
+
+        idx_sorted = np.argsort(row_data[non_zero_data])  # sort by column
+        top_k_idx = idx_sorted[-k:]
+
+        data.extend(row_data[non_zero_data][top_k_idx])
+        cols_indices.extend(column_index[non_zero_data][top_k_idx])
+
+    rows_indptr.append(len(data))
+
+    # During testing CSR is faster
+    W_sparse = sps.csr_matrix((data, cols_indices, rows_indptr), shape=(nusers, nitems), dtype=np.float32)
+
+    if verbose:
+        print("Sparse TopK matrix generated in {:.2f} seconds".format(time.time() - start_time))
+
+    return W_sparse

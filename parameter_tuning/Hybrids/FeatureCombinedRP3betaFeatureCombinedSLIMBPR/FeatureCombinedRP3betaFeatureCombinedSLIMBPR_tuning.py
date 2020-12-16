@@ -2,6 +2,7 @@ from src.Base.Evaluation.K_Fold_Evaluator import K_Fold_Evaluator_MAP
 from src.Utils.ICM_preprocessing import *
 from src.Utils.load_ICM import load_ICM
 from src.Utils.load_URM import load_URM
+import sklearn
 
 URM_all = load_URM("../../../in/data_train.csv")
 ICM_all = load_ICM("../../../in/data_ICM_title_abstract.csv")
@@ -28,30 +29,15 @@ from src.GraphBased.P3alphaRecommender import P3alphaRecommender
 from src.GraphBased.RP3betaCBFRecommender import RP3betaCBFRecommender
 from src.KNN.ItemKNNCFRecommender import ItemKNNCFRecommender
 from src.MatrixFactorization.PureSVDRecommender import PureSVDItemRecommender
+from src.SLIM_BPR.Cython.SLIM_BPR_Cython import SLIM_BPR_Cython
 
 from bayes_opt import BayesianOptimization
 
-p3alpha_recommenders = []
-rp3betaCBF_recommenders = []
 rp3betaCombined_recommenders = []
-itemKNN_recommenders = []
-pureSVD_recommenders = []
+slimBPRCombined_recommenders = []
 recommenders = []
 
 for index in range(len(URMs_train)):
-
-    p3alpha_recommenders.append(
-        P3alphaRecommender(
-            URM_train=URMs_train[index],
-            verbose=False
-        )
-    )
-
-    p3alpha_recommenders[index].fit(
-        topK=int(212.8832860130684),
-        alpha=0.4729294763382114,
-        implicit=True
-    )
 
     rp3betaCombined_recommenders.append(
         RP3betaCBFRecommender(
@@ -62,85 +48,60 @@ for index in range(len(URMs_train)):
     )
 
     rp3betaCombined_recommenders[index].fit(
-        topK=int(525.3588205773788),
-        alpha=0.42658191175355076,
-        beta=0.2284685880641364,
+        topK=int(529.1628484087545),
+        alpha=0.45304737831676245,
+        beta=0.226647894170121,
         implicit=False
     )
 
-    rp3betaCBF_recommenders.append(
-        RP3betaCBFRecommender(
-            URM_train=URMs_train[index],
-            ICM_train=ICM_all,
-            verbose=False
-        )
-    )
-
-    rp3betaCBF_recommenders[index].fit(
-        topK=int(58.16144182493173),
-        alpha=0.26520214286626453,
-        beta=0.36456352256640157,
-        implicit=False
-    )
-
-    itemKNN_recommenders.append(
-        ItemKNNCFRecommender(
+    slimBPRCombined_recommenders.append(
+        SLIM_BPR_Cython(
             URM_train=URMs_train[index],
             verbose=False
         )
     )
 
-    itemKNN_recommenders[index].fit(
-        topK=100,
-        shrink=50
+    slimBPRCombined_recommenders[index].fit(
+        epochs=39.54,
+        positive_threshold_BPR=None,
+        train_with_sparse_weights=True,
+        symmetric=False,
+        random_seed=None,
+        batch_size=393.93324941229486,
+        lambda_i=0.004419,
+        lambda_j=0.001592,
+        learning_rate=1e-4,
+        topK=int(891.9),
+        sgd_mode='adagrad',
+        # gamma=,
+        # beta_1=,
+        # beta_2=,
     )
 
-    pureSVD_recommenders.append(
-        PureSVDItemRecommender(
-            URM_train=URMs_train[index],
-            verbose=False
-        )
-    )
 
-    pureSVD_recommenders[index].fit(
-        num_factors=772,
-        topK= 599
-    )
+
+    slimBPRCombined_recommenders[index].URM_train = URMs_train[index]
+    slimBPRCombined_recommenders[index].W_sparse = sklearn.preprocessing.normalize(slimBPRCombined_recommenders[index].W_sparse, norm='l2', axis=1, copy=False, return_norm=False)
 
     recommenders.append(
         GeneralizedSimilarityMergedHybridRecommender(
         URM_train=URMs_train[index],
         similarityRecommenders=[
-            p3alpha_recommenders[index],
             rp3betaCombined_recommenders[index],
-            rp3betaCBF_recommenders[index],
-            itemKNN_recommenders[index],
-            pureSVD_recommenders[index]
+            slimBPRCombined_recommenders[index]
         ],
         verbose=False
     )
     )
 tuning_params = {
-    "hybrid1TopK": (500, 738),
-    "hybrid1Alpha": (0.5, 0.8),
-    "hybrid2TopK": (425, 575),
-    "hybrid2Alpha": (0.55, 0.85),
-    "hybrid3TopK": (450, 650),
-    "hybrid3Alpha": (0.7, 1),
-    "hybrid4TopK": (450, 650),
-    "hybrid4Alpha": (0.55, 0.85)
+    "hybrid1TopK": (10, 1000),
+    "hybrid1Alpha": (0, 1)
 }
 
 results = []
 def BO_func(
         hybrid1TopK,
-        hybrid1Alpha,
-        hybrid2TopK,
-        hybrid2Alpha,
-        hybrid3TopK,
-        hybrid3Alpha,
-        hybrid4TopK,
-        hybrid4Alpha
+        hybrid1Alpha
 ):
 
     for index in range(len(URMs_train)):
@@ -148,15 +109,9 @@ def BO_func(
         recommenders[index].fit(
             topKs=[
                 int(hybrid1TopK),
-                int(hybrid2TopK),
-                int(hybrid3TopK),
-                int(hybrid4TopK)
                 ],
             alphas=[
                 hybrid1Alpha,
-                hybrid2Alpha,
-                hybrid3Alpha,
-                hybrid4Alpha
             ]
         )
 
@@ -181,5 +136,4 @@ import json
 
 with open("logs/"+ recommenders[0].RECOMMENDER_NAME+"_logs.json", 'w') as json_file:
     json.dump(optimizer.max, json_file)
-
 

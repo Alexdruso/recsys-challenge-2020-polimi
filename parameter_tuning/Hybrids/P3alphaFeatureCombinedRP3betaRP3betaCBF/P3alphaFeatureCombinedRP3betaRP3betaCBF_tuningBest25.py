@@ -50,6 +50,9 @@ from bayes_opt import BayesianOptimization
 p3alpha_recommenders = []
 rp3betaCBF_recommenders = []
 rp3betaCombined_recommenders = []
+itemKNN_recommenders = []
+pureSVD_recommenders = []
+recommenders = []
 
 for index in range(len(URMs_train)):
 
@@ -60,12 +63,25 @@ for index in range(len(URMs_train)):
         )
     )
 
+    p3alpha_recommenders[index].fit(
+        topK=int(212.8832860130684),
+        alpha=0.4729294763382114,
+        implicit=True
+    )
+
     rp3betaCombined_recommenders.append(
         RP3betaCBFRecommender(
             URM_train=URMs_train[index],
             ICM_train=ICMs_combined[index],
             verbose=False
         )
+    )
+
+    rp3betaCombined_recommenders[index].fit(
+        topK=int(525.3588205773788),
+        alpha=0.42658191175355076,
+        beta=0.2284685880641364,
+        implicit=False
     )
 
     rp3betaCBF_recommenders.append(
@@ -77,51 +93,24 @@ for index in range(len(URMs_train)):
     )
 
 tuning_params = {
-    "cfTopK": (200, 220),
-    "cfAlpha": (0.4, 0.5),
-    "featureCombinedTopK": (530, 550),
-    "featureCombinedAlpha": (0.5, 0.6),
-    "featureCombinedBeta": (0.25, 0.35),
-    "cbfAlpha": (0.2, 0.3),
-    "cbfBeta": (0.35, 0.45),
-    "cbfTopK": (10, 100),
-    "hybrid1TopK": (900, 1000),
-    "hybrid1Alpha": (0.05, 0.15),
-    "hybrid2TopK": (10, 1100),
-    "hybrid2Alpha": (0.1, 0.9)
+    "hybrid2TopK": (800, 1300),
+    "hybrid2Alpha": (0.7, 0.9),
+    "cbfAlpha": (0.1, 0.2),
+    "cbfBeta": (0.9, 1),
+    "cbfTopK": (150, 250)
 }
 
 results = []
 def BO_func(
-        cfTopK,
-        cfAlpha,
-        featureCombinedTopK,
-        featureCombinedAlpha,
-        featureCombinedBeta,
-        cbfTopK,
         cbfAlpha,
         cbfBeta,
-        hybrid1TopK,
-        hybrid1Alpha,
+        cbfTopK,
         hybrid2TopK,
-        hybrid2Alpha
+        hybrid2Alpha,
 ):
-
     recommenders = []
+
     for index in range(len(URMs_train)):
-
-        p3alpha_recommenders[index].fit(
-            topK=int(cfTopK),
-            alpha=cfAlpha,
-            implicit=True
-        )
-
-        rp3betaCombined_recommenders[index].fit(
-            topK=int(featureCombinedTopK),
-            alpha=featureCombinedAlpha,
-            beta=featureCombinedBeta,
-            implicit=False
-        )
 
         rp3betaCBF_recommenders[index].fit(
             topK=int(cbfTopK),
@@ -129,29 +118,28 @@ def BO_func(
             beta=cbfBeta,
             implicit=False
         )
-
-        recommender = GeneralizedSimilarityMergedHybridRecommender(
-            URM_train=URMs_train[index],
-            similarityRecommenders=[
-                p3alpha_recommenders[index],
-                rp3betaCombined_recommenders[index],
-                rp3betaCBF_recommenders[index]
-            ],
-            verbose=False
+        recommenders.append(
+            GeneralizedSimilarityMergedHybridRecommender(
+                URM_train=URMs_train[index],
+                similarityRecommenders=[
+                    p3alpha_recommenders[index],
+                    rp3betaCombined_recommenders[index],
+                    rp3betaCBF_recommenders[index],
+                ],
+                verbose=False
+            )
         )
 
-        recommender.fit(
+        recommenders[index].fit(
             topKs=[
-                int(hybrid1TopK),
+                int(482.3259592432915),
                 int(hybrid2TopK)
-            ],
+                ],
             alphas=[
-                hybrid1Alpha,
+                0.2324902889610141,
                 hybrid2Alpha
             ]
         )
-
-        recommenders.append(recommender)
 
     result = evaluator_validation.evaluateRecommender(recommenders)
     results.append(result)
@@ -166,13 +154,12 @@ optimizer = BayesianOptimization(
 )
 
 optimizer.maximize(
-    init_points=30,
-    n_iter=20,
+    init_points=50,
+    n_iter=50,
 )
 
 import json
 
-with open("logs/P3alphaFeatureCombinedRP3betaRP3betaCBF_best25_logs.json", 'w') as json_file:
+with open("logs/"+ recommenders[0].RECOMMENDER_NAME+"_normal_logs.json", 'w') as json_file:
     json.dump(optimizer.max, json_file)
-
 

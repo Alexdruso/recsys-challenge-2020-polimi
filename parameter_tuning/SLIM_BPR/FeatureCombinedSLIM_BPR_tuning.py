@@ -32,7 +32,7 @@ tuning_params = {
     "lambda_i": (1e-5, 1e-2),
     "lambda_j": (1e-5, 1e-2),
     "topK": (100, 1000),
-    "epochs": (10, 500)
+    "epochs": (10, 50)
     #"gamma":(1e-5, 1e-2),
     #"beta_1":(1e-5, 1e-2),
     #"beta_2":(1e-5, 1e-2)
@@ -60,7 +60,7 @@ def BO_func(
         recommenders[index].fit(
             epochs=int(epochs),
             positive_threshold_BPR=None,
-            train_with_sparse_weights=None,
+            train_with_sparse_weights=True,
             symmetric=False,
             random_seed=None,
             batch_size=batch_size,

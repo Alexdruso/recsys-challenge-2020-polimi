@@ -32,7 +32,7 @@ for index in range(len(URMs_train)):
 tuning_params = {
     "alpha": (0, 1),
     "beta": (0, 1),
-    "topK": (10, 600)
+    "topK": (10, 1000)
 }
 
 results = []
@@ -44,7 +44,7 @@ def BO_func(
         topK
 ):
     for recommender in userRP3beta_recommenders:
-        recommender.fit(alpha=alpha, beta=beta, topK=int(topK), implicit=False)
+        recommender.fit(alpha=alpha, beta=beta, topK=int(topK), implicit=True)
 
     result = evaluator_validation.evaluateRecommender(userRP3beta_recommenders)
     results.append(result)
@@ -60,11 +60,11 @@ optimizer = BayesianOptimization(
 
 optimizer.maximize(
     init_points=30,
-    n_iter=20,
+    n_iter=50,
 )
 
 
 import json
 
-with open("logs/FeatureCombined" + userRP3beta_recommenders[0].RECOMMENDER_NAME + "_logs.json", 'w') as json_file:
+with open("logs/" + userRP3beta_recommenders[0].RECOMMENDER_NAME + "_logs.json", 'w') as json_file:
     json.dump(optimizer.max, json_file)

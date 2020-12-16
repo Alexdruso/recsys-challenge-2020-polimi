@@ -141,14 +141,14 @@ for index in range(len(URMs_train)):
     )
     )
 tuning_params = {
-    "hybrid1TopK": (10, 738),
-    "hybrid1Alpha": (0, 1),
-    "hybrid2TopK": (10, 796),
-    "hybrid2Alpha": (0, 1),
-    "hybrid3TopK": (10, 896),
-    "hybrid3Alpha": (0, 1),
-    "hybrid4TopK": (10, 1495),
-    "hybrid4Alpha": (0, 1)
+    "hybrid1TopK": (500, 738),
+    "hybrid1Alpha": (0.5, 1),
+    "hybrid2TopK": (300, 500),
+    "hybrid2Alpha": (0.5, 1),
+    "hybrid3TopK": (400, 600),
+    "hybrid3Alpha": (0.5, 1),
+    "hybrid4TopK": (100, 1000),
+    "hybrid4Alpha": (0.5, 1)
 }
 
 results = []

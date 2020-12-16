@@ -2,6 +2,7 @@ from src.Base.Evaluation.K_Fold_Evaluator import K_Fold_Evaluator_MAP
 from src.MatrixFactorization.Cython.MatrixFactorization_Cython import MatrixFactorization_FunkSVD_Cython
 from src.Utils.load_ICM import load_ICM
 from src.Utils.load_URM import load_URM
+from src.Utils.ICM_preprocessing import *
 
 URM_all = load_URM("../../../in/data_train.csv")
 ICM_all = load_ICM("../../../in/data_ICM_title_abstract.csv")
@@ -18,12 +19,15 @@ for k in range(5):
 
 evaluator_validation = K_Fold_Evaluator_MAP(URMs_validation, cutoff_list=[10], verbose=False)
 
+ICMs_combined = []
+for URM in URMs_train:
+    ICMs_combined.append(combine(ICM=ICM_all, URM=URM))
 
 recommenders = []
 
 for index in range(len(URMs_train)):
     recommenders.append(
-        MatrixFactorization_FunkSVD_Cython(URM_train=URMs_train[index])
+        MatrixFactorization_FunkSVD_Cython(URM_train=ICMs_combined[index].T)
     )
 
 
