@@ -40,7 +40,7 @@ for index in range(len(URMs_train)):
         )
     )
 
-for similarity in ['cosine', 'pearson', 'jaccard', 'tanimoto', 'adjusted', 'euclidean']:
+for similarity in ['cosine', 'pearson', 'jaccard', 'tanimoto', 'adjusted']:
     for feature_weighting in ["BM25", "TF-IDF", "none"]:
 
         print("Optimizing for similarity {} and feature weighting {}...".format(similarity, feature_weighting))
@@ -50,7 +50,8 @@ for similarity in ['cosine', 'pearson', 'jaccard', 'tanimoto', 'adjusted', 'eucl
                     topK=topK,
                     shrink=shrink,
                     similarity=similarity,
-                    feature_weighting=feature_weighting
+                    feature_weighting=feature_weighting,
+                    normalize=False
                 )
 
             result = evaluator_validation.evaluateRecommender(itemKNN_recommenders)

@@ -402,7 +402,7 @@ class EvaluatorHoldout(Evaluator):
     def _run_evaluation_on_selected_users(self, recommender_object, users_to_evaluate, block_size=None):
 
         if block_size is None:
-            block_size = min(1000, int(1e8 / self.n_items))
+            block_size = min(4000, int(1e8 / self.n_items))
             block_size = min(block_size, len(users_to_evaluate))
 
         results_dict = _create_empty_metrics_dict(self.cutoff_list,
