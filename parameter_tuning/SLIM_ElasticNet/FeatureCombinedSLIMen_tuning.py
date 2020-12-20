@@ -82,7 +82,7 @@ if __name__ == '__main__':
 
     recommenders.append(
         MultiThreadSLIM_ElasticNet(
-            URM_train=ICMs_combined[index].T,
+            URM_train=ICMs_combined[0].T,
             verbose=False
         )
     )
