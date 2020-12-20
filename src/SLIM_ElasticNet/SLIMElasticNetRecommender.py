@@ -20,11 +20,9 @@ class SLIMElasticNetRecommender(BaseItemSimilarityMatrixRecommender):
     Train a Sparse Linear Methods (SLIM) item similarity model.
     NOTE: ElasticNet solver is parallel, a single intance of SLIM_ElasticNet will
           make use of half the cores available
-
     See:
         Efficient Top-N Recommendation by Linear Regression,
         M. Levy and K. Jack, LSRS workshop at RecSys 2013.
-
         SLIM: Sparse linear methods for top-n recommender systems,
         X. Ning and G. Karypis, ICDM 2011.
         http://glaros.dtc.umn.edu/gkhome/fetch/papers/SLIM2011icdm.pdf
@@ -35,28 +33,22 @@ class SLIMElasticNetRecommender(BaseItemSimilarityMatrixRecommender):
     def __init__(self, URM_train, verbose=True):
         super(SLIMElasticNetRecommender, self).__init__(URM_train, verbose=verbose)
 
-    def fit(self, l1_ratio=0.1, alpha=1.0, positive_only=True, topK=100):
+    def fit(self, l1_ratio=0.1, alpha=1.0, tol =1e-4, positive_only=True, topK=100):
 
-        assert l1_ratio >= 0 and l1_ratio <= 1, "{}: l1_ratio must be between 0 and 1, provided value was {}".format(
-            self.RECOMMENDER_NAME, l1_ratio)
-
-        self.l1_ratio = l1_ratio
-        self.positive_only = positive_only
-        self.topK = topK
 
         # Display ConvergenceWarning only once and not for every item it occurs
         warnings.simplefilter("once", category=ConvergenceWarning)
 
         # initialize the ElasticNet model
         self.model = ElasticNet(alpha=alpha,
-                                l1_ratio=self.l1_ratio,
-                                positive=self.positive_only,
+                                l1_ratio=l1_ratio,
+                                positive=positive_only,
                                 fit_intercept=False,
                                 copy_X=False,
                                 precompute=True,
                                 selection='random',
                                 max_iter=100,
-                                tol=1e-4)
+                                tol=1e-2)
 
         URM_train = check_matrix(self.URM_train, 'csc', dtype=np.float32)
 
@@ -102,7 +94,7 @@ class SLIMElasticNetRecommender(BaseItemSimilarityMatrixRecommender):
             nonzero_model_coef_index = self.model.sparse_coef_.indices
             nonzero_model_coef_value = self.model.sparse_coef_.data
 
-            local_topK = min(len(nonzero_model_coef_value) - 1, self.topK)
+            local_topK = min(len(nonzero_model_coef_value) - 1, topK)
 
             relevant_items_partition = (-nonzero_model_coef_value).argpartition(local_topK)[0:local_topK]
             relevant_items_partition_sorting = np.argsort(-nonzero_model_coef_value[relevant_items_partition])
@@ -156,7 +148,7 @@ class MultiThreadSLIM_ElasticNet(SLIMElasticNetRecommender, BaseItemSimilarityMa
         super(MultiThreadSLIM_ElasticNet, self).__init__(URM_train, verbose=verbose)
 
     def _partial_fit(self, currentItem, X, topK):
-        model = ElasticNet(alpha=1.0,
+        model = ElasticNet(alpha=self.alpha,
                            l1_ratio=self.l1_ratio,
                            positive=self.positive_only,
                            fit_intercept=False,
@@ -164,7 +156,7 @@ class MultiThreadSLIM_ElasticNet(SLIMElasticNetRecommender, BaseItemSimilarityMa
                            precompute=True,
                            selection='random',
                            max_iter=100,
-                           tol=1e-4)
+                           tol=self.tol)
 
         # WARNING: make a copy of X to avoid race conditions on column j
         # TODO: We can probably come up with something better here.
@@ -192,13 +184,13 @@ class MultiThreadSLIM_ElasticNet(SLIMElasticNetRecommender, BaseItemSimilarityMa
 
         return values, rows, cols
 
-    def fit(self, l1_ratio=0.1,
-            positive_only=True,
-            topK=100,
+    def fit(self, l1_ratio=0.1, alpha=1.0, tol =1e-4, positive_only=True, topK=100,
             workers=multiprocessing.cpu_count()):
         assert l1_ratio >= 0 and l1_ratio <= 1, "SLIM_ElasticNet: l1_ratio must be between 0 and 1, provided value was {}".format(
             l1_ratio)
 
+        self.alpha = alpha
+        self.tol = tol
         self.l1_ratio = l1_ratio
         self.positive_only = positive_only
         self.topK = topK

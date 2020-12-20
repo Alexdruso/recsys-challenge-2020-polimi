@@ -182,9 +182,9 @@ rp3betaCombined_recommender= RP3betaCBFRecommender(
 )
 
 rp3betaCombined_recommender.fit(
-    topK=int(701.8),
-    alpha=0.4612,
-    beta=0.2766,
+    topK=int(741.3),
+    alpha=0.4812,
+    beta=0.2927,
     implicit=False
 )
 
@@ -215,7 +215,7 @@ higher_recommender = MergedHybridRecommender(
 )
 
 higher_recommender.fit(
-    alpha= 0.4884
+    alpha= 0.6354
 )
 
 import pandas as pd

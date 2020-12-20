@@ -12,7 +12,7 @@ from src.Data_manager.split_functions.split_train_validation_random_holdout impo
 URMs_train = []
 URMs_validation = []
 
-for k in range(5):
+for k in range(3):
     URM_train, URM_validation = split_train_in_two_percentage_global_sample(URM_all, train_percentage=0.80)
     URMs_train.append(URM_train)
     URMs_validation.append(URM_validation)
@@ -28,11 +28,11 @@ recommenders = []
 
 
 tuning_params = {
-    "batch_size": (128, 1024),
-    "lambda_i": (1e-5, 1e-2),
-    "lambda_j": (1e-5, 1e-2),
-    "topK": (100, 1000),
-    "epochs": (10, 50)
+    "batch_size": (350, 450),
+    "lambda_i": (0.0001, 0.01),
+    "lambda_j": (0.0001, 0.01),
+    "topK": (800, 1000),
+    "epochs": (30, 50)
     #"gamma":(1e-5, 1e-2),
     #"beta_1":(1e-5, 1e-2),
     #"beta_2":(1e-5, 1e-2)
@@ -91,8 +91,8 @@ optimizer = BayesianOptimization(
 )
 
 optimizer.maximize(
-    init_points=3,
-    n_iter=2
+    init_points=2,
+    n_iter=8
 )
 
 import json
