@@ -74,8 +74,8 @@ if __name__ == '__main__':
     )
 
     optimizer.maximize(
-        init_points=50,
-        n_iter=100
+        init_points=5,
+        n_iter=10
     )
 
     import json
