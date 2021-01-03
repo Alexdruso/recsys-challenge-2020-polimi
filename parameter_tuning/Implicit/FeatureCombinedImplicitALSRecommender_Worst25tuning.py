@@ -51,9 +51,9 @@ for index in range(len(URMs_train)):
 
 
 tuning_params = {
-    "urm_alpha":(1, 50),
-    "icm_alpha":(1, 50),
-    "factors":(1 , 30),
+    "urm_alpha":(10, 50),
+    "icm_alpha":(10, 50),
+    "factors":(10,250),
     "epochs": (10, 100)
 }
 

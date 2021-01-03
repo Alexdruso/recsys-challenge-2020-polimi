@@ -45,15 +45,15 @@ if __name__ == '__main__':
             )
         )
         IALS_recommenders[index].fit(
-            factors=int(250),
+            factors=int(398.601583855084),
             regularization=0.01,
             use_gpu=False,
-            iterations=43,
+            iterations=int(94.22855449116447),
             num_threads=4,
             confidence_scaling=linear_scaling_confidence,
             **{
-                'URM': {"alpha": 50},
-                'ICM': {"alpha": 50}
+                'URM': {"alpha": 42.07374324671451},
+                'ICM': {"alpha": 41.72067133975204}
             }
         )
 
@@ -90,7 +90,8 @@ if __name__ == '__main__':
 
     tuning_params = {
         "hybridWeight1": (0, 1),
-        "hybridWeight2": (0, 1)
+        "hybridWeight2": (0, 1),
+        "hybridWeight3": (0, 1),
     }
 
     results = []
@@ -98,7 +99,8 @@ if __name__ == '__main__':
 
     def BO_func(
             hybridWeight1,
-            hybridWeight2
+            hybridWeight2,
+            hybridWeight3
     ):
         recommenders = []
 
@@ -117,8 +119,8 @@ if __name__ == '__main__':
             recommender.fit(
                 alphas=[
                     hybridWeight1,
-                    (1-hybridWeight1),
-                    hybridWeight2
+                    hybridWeight2,
+                    hybridWeight3
                 ]
             )
 
@@ -137,8 +139,8 @@ if __name__ == '__main__':
     )
 
     optimizer.maximize(
-        init_points=30,
-        n_iter=50,
+        init_points=50,
+        n_iter=100,
     )
 
     recommender = GeneralizedMergedHybridRecommender(

@@ -41,15 +41,15 @@ for index in range(len(URMs_train)):
         )
     )
     IALS_recommenders[index].fit(
-        factors=int(250),
+        factors=int(398.601583855084),
         regularization=0.01,
         use_gpu=False,
-        iterations=43,
+        iterations=int(94.22855449116447),
         num_threads=4,
         confidence_scaling=linear_scaling_confidence,
         **{
-            'URM': {"alpha": 50},
-            'ICM': {"alpha": 50}
+            'URM': {"alpha": 42.07374324671451},
+            'ICM': {"alpha": 41.72067133975204}
         }
     )
 
@@ -61,10 +61,13 @@ for index in range(len(URMs_train)):
         )
     )
 
+    rp3betaCBF_recommenders[index].fit(
+        topK=int(529.1628484087545),
+        alpha=0.45304737831676245,
+        beta=0.226647894170121,
+        implicit=False
+    )
 tuning_params = {
-    "rp3betaTopK": (500, 600),
-    "rp3betaAlpha": (0.4, 0.5),
-    "rp3betaBeta": (0.2, 0.3),
     "hybridAlpha": (0, 1)
 }
 
@@ -72,20 +75,11 @@ results = []
 
 
 def BO_func(
-        rp3betaTopK,
-        rp3betaAlpha,
-        rp3betaBeta,
         hybridAlpha
 ):
     recommenders = []
 
     for index in range(len(URMs_train)):
-        rp3betaCBF_recommenders[index].fit(
-            topK=int(rp3betaTopK),
-            alpha=rp3betaAlpha,
-            beta=rp3betaBeta,
-            implicit=False
-        )
 
         recommender = MergedHybridRecommender(
             URM_train=URMs_train[index],
@@ -114,7 +108,7 @@ optimizer = BayesianOptimization(
 
 optimizer.maximize(
     init_points=30,
-    n_iter=20,
+    n_iter=70,
 )
 
 p3alpha_recommender = FeatureCombinedImplicitALSRecommender(URM_train=URM_all, ICM_train=ICM_all)

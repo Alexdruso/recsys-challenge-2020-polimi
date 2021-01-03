@@ -105,9 +105,9 @@ rp3betaCombined_recommender= RP3betaCBFRecommender(
 )
 
 rp3betaCombined_recommender.fit(
-    topK=int(527.4),
-    alpha=0.4158,
-    beta=0.288 ,
+    topK=int(529.1628484087545),
+    alpha=0.45304737831676245,
+    beta=0.226647894170121,
     implicit=False
 )
 
@@ -118,15 +118,15 @@ IALS_recommender= FeatureCombinedImplicitALSRecommender(
 )
 
 IALS_recommender.fit(
-    factors=int(250),
+    factors=int(398.601583855084),
     regularization=0.01,
     use_gpu=False,
-    iterations=43,
+    iterations=int(94.22855449116447),
     num_threads=4,
     confidence_scaling=linear_scaling_confidence,
     **{
-        'URM': {"alpha": 50},
-        'ICM': {"alpha": 50}
+        'URM': {"alpha": 42.07374324671451},
+        'ICM': {"alpha": 41.72067133975204}
     }
 )
 
@@ -172,7 +172,7 @@ lower_recommender = MergedHybridRecommender(
 )
 
 lower_recommender.fit(
-    alpha= 0.4413
+    alpha= 0.6686
 )
 
 rp3betaCombined_recommender= RP3betaCBFRecommender(
