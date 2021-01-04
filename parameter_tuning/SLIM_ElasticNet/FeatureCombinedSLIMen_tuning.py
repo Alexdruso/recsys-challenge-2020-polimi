@@ -54,7 +54,7 @@ if __name__ == '__main__':
                 alpha=alpha,
                 l1_ratio=l1_ratio,
                 topK=int(topK),
-                workers=4
+                workers=6
             )
 
             recommenders[index].URM_train = URMs_train[index]
@@ -74,8 +74,8 @@ if __name__ == '__main__':
     )
 
     optimizer.maximize(
-        init_points=5,
-        n_iter=10
+        init_points=10,
+        n_iter=15
     )
 
     import json
