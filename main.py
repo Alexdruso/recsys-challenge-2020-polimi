@@ -39,9 +39,9 @@ if __name__ == '__main__':
     )
 
     rp3betaCombined_recommender.fit(
-        topK=int(527.4),
-        alpha=0.4158,
-        beta=0.288 ,
+        topK=int(529.1628484087545),
+        alpha=0.45304737831676245,
+        beta=0.226647894170121,
         implicit=False
     )
 
@@ -52,15 +52,15 @@ if __name__ == '__main__':
     )
 
     IALS_recommender.fit(
-        factors=int(250),
+        factors=int(398.601583855084),
         regularization=0.01,
         use_gpu=False,
-        iterations=43,
-        num_threads=4,
+        iterations=int(94.22855449116447),
+        num_threads=6,
         confidence_scaling=linear_scaling_confidence,
         **{
-            'URM': {"alpha": 50},
-            'ICM': {"alpha": 50}
+            'URM': {"alpha": 42.07374324671451},
+            'ICM': {"alpha": 41.72067133975204}
         }
     )
 
@@ -70,10 +70,10 @@ if __name__ == '__main__':
         )
 
     SLIM_recommender.fit(
-        alpha=0.000490,
-        l1_ratio=0.02911,
-        topK=int(178),
-        workers=4
+        alpha=0.00026894910579512645,
+        l1_ratio=0.08074126876487486,
+        topK=int(395.376118479588),
+        workers=6
     )
 
     SLIM_recommender.URM_train = URM_all
@@ -124,9 +124,9 @@ if __name__ == '__main__':
 
     recommender.fit(
         alphas=[
-            0.5515927662083718,
-            (1 - 0.5515927662083718),
-            0.33515078397927905
+            0.6836750866517823,
+            0.45969038157844144,
+            0.2723405593515382
         ]
     )
 

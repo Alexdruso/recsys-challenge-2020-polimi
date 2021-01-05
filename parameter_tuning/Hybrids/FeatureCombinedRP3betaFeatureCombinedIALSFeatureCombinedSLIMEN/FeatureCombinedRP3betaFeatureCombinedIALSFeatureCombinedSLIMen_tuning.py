@@ -80,10 +80,10 @@ if __name__ == '__main__':
         )
 
         SLIM_recommenders[index].fit(
-            alpha=0.000490,
-            l1_ratio=0.02911,
-            topK=int(178),
-            workers=4
+            alpha=0.00026894910579512645,
+            l1_ratio=0.08074126876487486,
+            topK=int(395.376118479588),
+            workers=6
         )
 
         SLIM_recommenders[index].URM_train = URMs_train[index]
@@ -139,8 +139,8 @@ if __name__ == '__main__':
     )
 
     optimizer.maximize(
-        init_points=50,
-        n_iter=100,
+        init_points=100,
+        n_iter=200,
     )
 
     recommender = GeneralizedMergedHybridRecommender(
