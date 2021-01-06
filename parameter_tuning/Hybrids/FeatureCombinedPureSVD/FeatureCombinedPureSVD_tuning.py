@@ -23,24 +23,23 @@ ICMs_combined = []
 for URM in URMs_train:
     ICMs_combined.append(combine(ICM=ICM_all, URM=URM))
 
-from src.MatrixFactorization.PureSVDItemCBFRecommender import PureSVDItemCBFRecommender
+from src.MatrixFactorization.PureSVDRecommender import PureSVDRecommender
 
 from bayes_opt import BayesianOptimization
 
-pureSVDItemCBF_recommenders = []
+pureSVD_recommenders = []
 
 for index in range(len(URMs_train)):
-    pureSVDItemCBF_recommenders.append(
-        PureSVDItemCBFRecommender(
-            URM_train=URMs_train[index],
-            ICM_train=ICMs_combined[index],
+    pureSVD_recommenders.append(
+        PureSVDRecommender(
+            URM_train=ICMs_combined[index].T,
             verbose=False
         )
     )
 
 tuning_params = {
     "num_factors":(10, 800),
-    "topK": (10, 800)
+    "n_iter": (1, 10)
 }
 
 results = []
@@ -48,12 +47,12 @@ results = []
 
 def BO_func(
         num_factors,
-        topK
+        n_iter
 ):
-    for recommender in pureSVDItemCBF_recommenders:
-        recommender.fit(num_factors=int(num_factors),topK=int(topK))
+    for recommender in pureSVD_recommenders:
+        recommender.fit(num_factors=int(num_factors), random_seed=1, n_iter=int(n_iter))
 
-    result = evaluator_validation.evaluateRecommender(pureSVDItemCBF_recommenders)
+    result = evaluator_validation.evaluateRecommender(pureSVD_recommenders)
     results.append(result)
     return sum(result) / len(result)
 
@@ -66,13 +65,13 @@ optimizer = BayesianOptimization(
 )
 
 optimizer.maximize(
-    init_points=30,
+    init_points=50,
     n_iter=20,
 )
 
 
 import json
 
-with open("logs/FeatureCombined" + pureSVDItemCBF_recommenders[0].RECOMMENDER_NAME + "_logs.json", 'w') as json_file:
+with open("logs/FeatureCombined" + pureSVD_recommenders[0].RECOMMENDER_NAME + "_logs.json", 'w') as json_file:
     json.dump(optimizer.max, json_file)
 

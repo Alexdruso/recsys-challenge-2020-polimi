@@ -29,12 +29,12 @@ class PureSVDRecommender(BaseMatrixFactorizationRecommender):
     def __init__(self, URM_train, verbose=True):
         super(PureSVDRecommender, self).__init__(URM_train, verbose=verbose)
 
-    def fit(self, num_factors=100, random_seed=None):
+    def fit(self, num_factors=100, random_seed=None, n_iter = 4):
         self._print("Computing SVD decomposition...")
 
         U, Sigma, QT = randomized_svd(self.URM_train,
                                       n_components=num_factors,
-                                      # n_iter=5,
+                                      n_iter=n_iter,
                                       random_state=random_seed)
 
         U_s = U * sps.diags(Sigma)
@@ -114,12 +114,12 @@ class PureSVDItemRecommender(BaseItemSimilarityMatrixRecommender):
     def __init__(self, URM_train, verbose=True):
         super(PureSVDItemRecommender, self).__init__(URM_train, verbose=verbose)
 
-    def fit(self, num_factors=100, topK=None, random_seed=None):
+    def fit(self, num_factors=100, topK=None, random_seed=None, n_iter=4):
         self._print("Computing SVD decomposition...")
 
         U, Sigma, QT = randomized_svd(self.URM_train,
                                       n_components=num_factors,
-                                      # n_iter=5,
+                                      n_iter=n_iter,
                                       random_state=random_seed)
 
         if topK is None:
