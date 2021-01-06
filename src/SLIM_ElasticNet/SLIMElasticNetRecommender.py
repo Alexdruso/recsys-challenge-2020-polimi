@@ -155,7 +155,7 @@ class MultiThreadSLIM_ElasticNet(SLIMElasticNetRecommender, BaseItemSimilarityMa
                            copy_X=False,
                            precompute=True,
                            selection='random',
-                           max_iter=100,
+                           max_iter=self.max_iter,
                            tol=self.tol)
 
         # WARNING: make a copy of X to avoid race conditions on column j
@@ -184,7 +184,7 @@ class MultiThreadSLIM_ElasticNet(SLIMElasticNetRecommender, BaseItemSimilarityMa
 
         return values, rows, cols
 
-    def fit(self, l1_ratio=0.1, alpha=1.0, tol =1e-4, positive_only=True, topK=100,
+    def fit(self, l1_ratio=0.1, alpha=1.0, tol =1e-4, positive_only=True, topK=100, max_iter=100,
             workers=multiprocessing.cpu_count()):
         assert l1_ratio >= 0 and l1_ratio <= 1, "SLIM_ElasticNet: l1_ratio must be between 0 and 1, provided value was {}".format(
             l1_ratio)
@@ -194,6 +194,7 @@ class MultiThreadSLIM_ElasticNet(SLIMElasticNetRecommender, BaseItemSimilarityMa
         self.l1_ratio = l1_ratio
         self.positive_only = positive_only
         self.topK = topK
+        self.max_iter = max_iter
 
         self.workers = workers
 

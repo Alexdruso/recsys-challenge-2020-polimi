@@ -12,14 +12,32 @@ if __name__ == '__main__':
 
     URMs_train = []
     URMs_validation = []
+    ignore_users_list = []
 
-    for k in range(3):
+    import numpy as np
+
+    for k in range(5):
         URM_train, URM_validation = split_train_in_two_percentage_global_sample(URM_all, train_percentage=0.80)
         URMs_train.append(URM_train)
         URMs_validation.append(URM_validation)
 
-    evaluator_validation = K_Fold_Evaluator_MAP(URMs_validation, cutoff_list=[10], verbose=False)
+        profile_length = np.ediff1d(URM_train.indptr)
+        block_size = int(len(profile_length) * 0.25)
 
+        start_pos = 3 * block_size
+        end_pos = min(4 * block_size, len(profile_length))
+        sorted_users = np.argsort(profile_length)
+
+        users_in_group = sorted_users[start_pos:end_pos]
+
+        users_in_group_p_len = profile_length[users_in_group]
+        sorted_users = np.argsort(profile_length)
+
+        users_not_in_group_flag = np.isin(sorted_users, users_in_group, invert=True)
+        ignore_users_list.append(sorted_users[users_not_in_group_flag])
+
+    evaluator_validation = K_Fold_Evaluator_MAP(URMs_validation, cutoff_list=[10], verbose=False,
+                                                ignore_users_list=ignore_users_list)
     ICMs_combined = []
     for URM in URMs_train:
         ICMs_combined.append(combine(ICM=ICM_all, URM=URM))
@@ -90,5 +108,5 @@ if __name__ == '__main__':
 
     recommenders[0].fit()
 
-    with open("logs/FeatureCombined" + recommenders[0].RECOMMENDER_NAME + "_logs.json", 'w') as json_file:
+    with open("logs/FeatureCombined" + recommenders[0].RECOMMENDER_NAME + "_best25_logs.json", 'w') as json_file:
         json.dump(optimizer.max, json_file)
