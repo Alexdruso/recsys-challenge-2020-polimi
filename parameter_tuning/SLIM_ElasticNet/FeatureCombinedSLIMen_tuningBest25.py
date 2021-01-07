@@ -16,7 +16,7 @@ if __name__ == '__main__':
 
     import numpy as np
 
-    for k in range(5):
+    for k in range(3):
         URM_train, URM_validation = split_train_in_two_percentage_global_sample(URM_all, train_percentage=0.80)
         URMs_train.append(URM_train)
         URMs_validation.append(URM_validation)
@@ -39,74 +39,57 @@ if __name__ == '__main__':
     evaluator_validation = K_Fold_Evaluator_MAP(URMs_validation, cutoff_list=[10], verbose=False,
                                                 ignore_users_list=ignore_users_list)
     ICMs_combined = []
-    for URM in URMs_train:
-        ICMs_combined.append(combine(ICM=ICM_all, URM=URM))
-
     recommenders = []
 
-    tuning_params = {
-        "l1_ratio": (0, 1),
-        "topK": (100, 500),
-        "max_iter": (10, 200)
-    }
+    for URM in URMs_train:
+        ICM_combined = combine(ICM=ICM_all, URM=URM)
 
-    results = []
+        recommender = MultiThreadSLIM_ElasticNet(
+                URM_train=ICM_combined.T,
+                verbose=False
+            )
+        recommender.fit(
+            alpha=0.00026894910579512645,
+            l1_ratio=0.08074126876487486,
+            topK=URM.shape[1]-1,
+            max_iter=100,
+            workers=6
+        )
 
+        recommender.URM_train = URM
 
-    def BO_func(
-            l1_ratio,
-            topK,
-            max_iter
-    ):
-        recommenders = []
+        recommenders.append(
+            recommender
+        )
 
+        print("recommender trained")
+
+    result = evaluator_validation.evaluateRecommender(recommenders)
+    topMap = sum(result) / len(result)
+    bestTopK = np.inf
+
+    print("The current top MAP is {}".format(topMap))
+
+    from src.Base.Recommender_utils import ratingMatrixTopK
+
+    for topK in [5000, 4000, 3000, 2000, 1500, 1000, 800, 700, 600, 400]:
         for index in range(len(URMs_train)):
-            recommenders.append(
-                MultiThreadSLIM_ElasticNet(
-                    URM_train=ICMs_combined[index].T,
-                    verbose=False
-                )
+            recommenders[index].W_sparse = ratingMatrixTopK(
+                recommenders[index].W_sparse,
+                k=topK
             )
-
-            recommenders[index].fit(
-                alpha=0.0001,
-                l1_ratio=l1_ratio,
-                topK=int(topK),
-                max_iter=int(max_iter),
-                workers=6
-            )
-
-            recommenders[index].URM_train = URMs_train[index]
-
         result = evaluator_validation.evaluateRecommender(recommenders)
-        results.append(result)
-        return sum(result) / len(result)
+        map = sum(result) / len(result)
 
+        print("With topK = {} map is {}".format(topK, map))
 
-    from bayes_opt import BayesianOptimization
+        if(map>topMap):
+            print("New topMap found!")
+            topMap = map
+            bestTopK = topK
 
-    optimizer = BayesianOptimization(
-        f=BO_func,
-        pbounds=tuning_params,
-        verbose=5,
-        random_state=5,
-    )
-
-    optimizer.maximize(
-        init_points=10,
-        n_iter=15
-    )
 
     import json
 
-    recommenders.append(
-        MultiThreadSLIM_ElasticNet(
-            URM_train=ICMs_combined[0].T,
-            verbose=False
-        )
-    )
-
-    recommenders[0].fit()
-
     with open("logs/FeatureCombined" + recommenders[0].RECOMMENDER_NAME + "_best25_logs.json", 'w') as json_file:
-        json.dump(optimizer.max, json_file)
+        json.dump({"target": topMap, "params": {"topK": bestTopK}}, json_file)

@@ -8,20 +8,16 @@ if __name__ == '__main__':
     ICM_all = load_ICM("in/data_ICM_title_abstract.csv")
 
     profile_length = np.ediff1d(URM_all.indptr)
-    block_size = int(len(profile_length)*0.25)
+    block_size = int(len(profile_length)*0.1)
 
-    start_worst = 0
-    end_worst = block_size
-    end_normal = 3*block_size
-    end_best = min(4 * block_size, len(profile_length))
+    start_lower = 0
+    end_lower = 7*block_size
+    end_higher = min(10 * block_size, len(profile_length))
     sorted_users = np.argsort(profile_length)
 
-    users_in_worst = set(sorted_users[start_worst:end_worst])
+    users_in_lower = set(sorted_users[0:end_lower])
 
-
-    users_in_normal = set(sorted_users[end_worst+1:end_normal])
-
-    users_in_best = set(sorted_users[end_normal+1:end_best])
+    users_in_higher = set(sorted_users[end_lower:end_higher])
 
 
     # from src.Hybrid.SimilarityMergedHybridRecommender import SimilarityMergedHybridRecommender
@@ -254,9 +250,7 @@ if __name__ == '__main__':
         writer.writerow(['user_id', 'item_list'])
 
         for userID in targetUsers:
-            if userID in users_in_normal:
-                writer.writerow([userID, str(np.array(lower_recommender.recommend(userID, 10)))[1:-1]])
-            elif userID in users_in_best:
+            if userID in users_in_higher:
                 writer.writerow([userID, str(np.array(higher_recommender.recommend(userID, 10)))[1:-1]])
             else:
                 writer.writerow([userID, str(np.array(lower_recommender.recommend(userID, 10)))[1:-1]])
