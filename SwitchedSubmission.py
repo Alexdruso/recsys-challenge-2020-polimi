@@ -8,11 +8,11 @@ if __name__ == '__main__':
     ICM_all = load_ICM("in/data_ICM_title_abstract.csv")
 
     profile_length = np.ediff1d(URM_all.indptr)
-    block_size = int(len(profile_length)*0.1)
+    block_size = int(len(profile_length)*0.25)
 
     start_lower = 0
-    end_lower = 7*block_size
-    end_higher = min(10 * block_size, len(profile_length))
+    end_lower = 3*block_size
+    end_higher = len(profile_length)
     sorted_users = np.argsort(profile_length)
 
     users_in_lower = set(sorted_users[0:end_lower])
@@ -76,7 +76,7 @@ if __name__ == '__main__':
     # recommender_best.fit(topK=872, alpha=0.2776,)
 
     from src.GraphBased.RP3betaCBFRecommender import RP3betaCBFRecommender
-    from src.Hybrid.MergedHybridRecommender import MergedHybridRecommender
+    from src.MatrixFactorization.PureSVDRecommender import PureSVDRecommender
     from src.Hybrid.GeneralizedMergedHybridRecommender import GeneralizedMergedHybridRecommender
     from src.Implicit.FeatureCombinedImplicitALSRecommender import FeatureCombinedImplicitALSRecommender
     from src.SLIM_ElasticNet.SLIMElasticNetRecommender import MultiThreadSLIM_ElasticNet
@@ -194,20 +194,7 @@ if __name__ == '__main__':
         ]
     )
 
-    rp3betaCombined_recommender= RP3betaCBFRecommender(
-        URM_train=URM_all,
-        ICM_train=ICM_combined,
-        verbose=False
-    )
-
-    rp3betaCombined_recommender.fit(
-        topK=int(741.3),
-        alpha=0.4812,
-        beta=0.2927,
-        implicit=False
-    )
-
-    IALS_recommender= FeatureCombinedImplicitALSRecommender(
+    IALS_recommender = FeatureCombinedImplicitALSRecommender(
         URM_train=URM_all,
         ICM_train=ICM_all,
         verbose=True
@@ -218,7 +205,7 @@ if __name__ == '__main__':
         regularization=0.01,
         use_gpu=False,
         iterations=94,
-        num_threads=4,
+        num_threads=6,
         confidence_scaling=linear_scaling_confidence,
         **{
             'URM': {"alpha": 50},
@@ -226,15 +213,48 @@ if __name__ == '__main__':
         }
     )
 
-    higher_recommender = MergedHybridRecommender(
+    rp3betaCBF_recommender = RP3betaCBFRecommender(
         URM_train=URM_all,
-        recommender1=IALS_recommender,
-        recommender2=rp3betaCombined_recommender,
+        ICM_train=ICM_combined,
+        verbose=False
+    )
+
+    rp3betaCBF_recommender.fit(
+        topK=int(741.3),
+        alpha=0.4812,
+        beta=0.2927,
+        implicit=False
+    )
+
+    PureSVD_recommender = PureSVDRecommender(
+            URM_train=ICM_combined.T,
+            verbose=False
+        )
+
+    PureSVD_recommender.fit(
+        num_factors=1000,
+        random_seed=1,
+        n_iter=1
+    )
+
+
+
+    higher_recommender = GeneralizedMergedHybridRecommender(
+        URM_train=URM_all,
+        recommenders=[
+            IALS_recommender,
+            rp3betaCombined_recommender,
+            PureSVD_recommender
+        ],
         verbose=False
     )
 
     higher_recommender.fit(
-        alpha= 0.6354
+        alphas=[
+            0.9049320776860861 * 0.6354,
+            0.9049320776860861 * (1 - 0.6354),
+            1 - 0.9049320776860861
+        ]
     )
 
     import pandas as pd
