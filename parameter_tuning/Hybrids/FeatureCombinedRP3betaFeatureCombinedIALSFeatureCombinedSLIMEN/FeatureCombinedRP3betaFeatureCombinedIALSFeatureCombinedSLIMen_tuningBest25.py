@@ -108,14 +108,16 @@ if __name__ == '__main__':
         SLIM_recommenders[index].URM_train = URMs_train[index]
 
     tuning_params = {
-        "alpha": (0.7, 1),
+        "alpha": (0, 1),
+        "beta": (0, 1),
     }
 
     results = []
 
 
     def BO_func(
-            alpha
+            alpha,
+            beta
     ):
         recommenders = []
 
@@ -133,8 +135,8 @@ if __name__ == '__main__':
 
             recommender.fit(
                 alphas=[
-                    alpha*0.6354,
-                    alpha*(1-0.6354),
+                    alpha*beta,
+                    alpha*(1-beta),
                     1-alpha
                 ]
             )
@@ -154,8 +156,8 @@ if __name__ == '__main__':
     )
 
     optimizer.maximize(
-        init_points=15,
-        n_iter=90,
+        init_points=90,
+        n_iter=50,
     )
 
     recommender = GeneralizedMergedHybridRecommender(
