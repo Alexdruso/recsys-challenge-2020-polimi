@@ -98,20 +98,7 @@ if __name__ == '__main__':
     #     implicit=True
     # )
 
-    rp3betaCombined_recommender= RP3betaCBFRecommender(
-        URM_train=URM_all,
-        ICM_train=ICM_combined,
-        verbose=False
-    )
-
-    rp3betaCombined_recommender.fit(
-        topK=int(529.1628484087545),
-        alpha=0.45304737831676245,
-        beta=0.226647894170121,
-        implicit=False
-    )
-
-    IALS_recommender= FeatureCombinedImplicitALSRecommender(
+    IALS_recommender = FeatureCombinedImplicitALSRecommender(
         URM_train=URM_all,
         ICM_train=ICM_all,
         verbose=True
@@ -122,7 +109,7 @@ if __name__ == '__main__':
         regularization=0.01,
         use_gpu=False,
         iterations=int(94.22855449116447),
-        num_threads=6,
+        num_threads=4,
         confidence_scaling=linear_scaling_confidence,
         **{
             'URM': {"alpha": 42.07374324671451},
@@ -130,10 +117,23 @@ if __name__ == '__main__':
         }
     )
 
-    SLIM_recommender=MultiThreadSLIM_ElasticNet(
-                    URM_train= ICM_combined.T,
-                    verbose=False
+    rp3betaCBF_recommender = RP3betaCBFRecommender(
+        URM_train=URM_all,
+        ICM_train=ICM_combined,
+        verbose=False
     )
+
+    rp3betaCBF_recommender.fit(
+        topK=int(529.1628484087545),
+        alpha=0.45304737831676245,
+        beta=0.226647894170121,
+        implicit=False
+    )
+
+    SLIM_recommender = MultiThreadSLIM_ElasticNet(
+            URM_train=ICM_combined.T,
+            verbose=False
+        )
 
     SLIM_recommender.fit(
         alpha=0.00026894910579512645,
@@ -141,6 +141,8 @@ if __name__ == '__main__':
         topK=int(395.376118479588),
         workers=6
     )
+
+    SLIM_recommender.URM_train = URM_all
 
     # rp3betaCBF_recommender= RP3betaCBFRecommender(
     #     URM_train=URM_all,
@@ -180,7 +182,7 @@ if __name__ == '__main__':
         URM_train=URM_all,
         recommenders=[
             IALS_recommender,
-            rp3betaCombined_recommender,
+            rp3betaCBF_recommender,
             SLIM_recommender
         ],
         verbose=False
@@ -188,12 +190,11 @@ if __name__ == '__main__':
 
     lower_recommender.fit(
         alphas=[
-            0.635089550770892*0.6686,
-            0.635089550770892*(1-0.6686),
-            1-0.635089550770892
+            0.8493410414776321*0.537000520182483,
+            0.8493410414776321*(1-0.537000520182483),
+            1-0.8493410414776321
         ]
     )
-
     IALS_recommender = FeatureCombinedImplicitALSRecommender(
         URM_train=URM_all,
         ICM_train=ICM_all,
@@ -226,34 +227,35 @@ if __name__ == '__main__':
         implicit=False
     )
 
-    PureSVD_recommender = PureSVDRecommender(
+    SLIM_recommender = MultiThreadSLIM_ElasticNet(
             URM_train=ICM_combined.T,
             verbose=False
         )
 
-    PureSVD_recommender.fit(
-        num_factors=1000,
-        random_seed=1,
-        n_iter=1
+    SLIM_recommender.fit(
+        alpha=0.00026894910579512645,
+        l1_ratio=0.08074126876487486,
+        topK=int(400),
+        workers=6
     )
 
-
+    SLIM_recommender.URM_train = URM_all
 
     higher_recommender = GeneralizedMergedHybridRecommender(
         URM_train=URM_all,
         recommenders=[
             IALS_recommender,
-            rp3betaCombined_recommender,
-            PureSVD_recommender
+            rp3betaCBF_recommender,
+            SLIM_recommender
         ],
         verbose=False
     )
 
     higher_recommender.fit(
         alphas=[
-            0.9049320776860861 * 0.6354,
-            0.9049320776860861 * (1 - 0.6354),
-            1 - 0.9049320776860861
+            0.6879337082904029*0.5906403634166495,
+            0.6879337082904029*(1-0.5906403634166495),
+            1-0.6879337082904029
         ]
     )
 

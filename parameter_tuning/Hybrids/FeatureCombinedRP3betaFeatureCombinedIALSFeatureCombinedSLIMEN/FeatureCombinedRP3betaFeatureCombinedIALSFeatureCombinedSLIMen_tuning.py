@@ -90,13 +90,15 @@ if __name__ == '__main__':
 
     tuning_params = {
         "alpha": (0, 1),
+        "beta": (0, 1),
     }
 
     results = []
 
 
     def BO_func(
-            alpha
+            alpha,
+            beta
     ):
         recommenders = []
 
@@ -114,8 +116,8 @@ if __name__ == '__main__':
 
             recommender.fit(
                 alphas=[
-                    alpha*0.6686,
-                    alpha*(1-0.6686),
+                    alpha*beta,
+                    alpha*(1-beta),
                     1-alpha
                 ]
             )
@@ -135,8 +137,8 @@ if __name__ == '__main__':
     )
 
     optimizer.maximize(
-        init_points=10,
-        n_iter=90,
+        init_points=100,
+        n_iter=50,
     )
 
     recommender = GeneralizedMergedHybridRecommender(
