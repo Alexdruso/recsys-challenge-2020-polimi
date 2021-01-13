@@ -80,6 +80,7 @@ if __name__ == '__main__':
     from src.Hybrid.GeneralizedMergedHybridRecommender import GeneralizedMergedHybridRecommender
     from src.Implicit.FeatureCombinedImplicitALSRecommender import FeatureCombinedImplicitALSRecommender
     from src.SLIM_ElasticNet.SLIMElasticNetRecommender import MultiThreadSLIM_ElasticNet
+    from src.GraphBased.UserRP3betaRecommender import UserRP3betaRecommender
     from src.Utils.ICM_preprocessing import *
     from src.Utils.load_URM import load_URM
     from src.Utils.load_ICM import load_ICM
@@ -144,6 +145,19 @@ if __name__ == '__main__':
 
     SLIM_recommender.URM_train = URM_all
 
+    userRp3beta_recommender = UserRP3betaRecommender(
+        URM_train=ICM_combined.T,
+        verbose=False
+    )
+
+
+    userRp3beta_recommender.fit(
+        topK=320,
+        alpha=0.4238,
+        beta=0.3186,
+        implicit=False
+    )
+
     # rp3betaCBF_recommender= RP3betaCBFRecommender(
     #     URM_train=URM_all,
     #     ICM_train=ICM_all,
@@ -183,16 +197,18 @@ if __name__ == '__main__':
         recommenders=[
             IALS_recommender,
             rp3betaCBF_recommender,
-            SLIM_recommender
+            SLIM_recommender,
+            userRp3beta_recommender
         ],
         verbose=False
     )
 
     lower_recommender.fit(
         alphas=[
-            0.8493410414776321*0.537000520182483,
-            0.8493410414776321*(1-0.537000520182483),
-            1-0.8493410414776321
+            0.980479953160615 * 0.8493410414776321 * 0.537000520182483,
+            0.980479953160615 * 0.8493410414776321 * (1 - 0.537000520182483),
+            0.980479953160615 * (1 - 0.8493410414776321),
+            1 - 0.980479953160615
         ]
     )
     IALS_recommender = FeatureCombinedImplicitALSRecommender(
