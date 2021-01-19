@@ -257,21 +257,35 @@ if __name__ == '__main__':
 
     SLIM_recommender.URM_train = URM_all
 
+    userRp3beta_recommender = UserRP3betaRecommender(
+        URM_train=ICM_combined.T,
+        verbose=False
+    )
+
+    userRp3beta_recommender.fit(
+        topK=201,
+        alpha=0.6436402193909941,
+        beta=0.5094750943074225,
+        implicit=False
+    )
+
     higher_recommender = GeneralizedMergedHybridRecommender(
         URM_train=URM_all,
         recommenders=[
             IALS_recommender,
             rp3betaCBF_recommender,
-            SLIM_recommender
+            SLIM_recommender,
+            userRp3beta_recommender
         ],
         verbose=False
     )
 
     higher_recommender.fit(
         alphas=[
-            0.6879337082904029*0.5906403634166495,
-            0.6879337082904029*(1-0.5906403634166495),
-            1-0.6879337082904029
+            0.4443439790958872 * 0.6879337082904029 * 0.590640363416649,
+            0.4443439790958872 * 0.6879337082904029 * (1 - 0.590640363416649),
+            0.4443439790958872 * (1 - 0.6879337082904029),
+            1 - 0.4443439790958872
         ]
     )
 
