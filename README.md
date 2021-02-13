@@ -1,176 +1,48 @@
-# RecSysChallenge2020
-This repo contains my own solutions for the [RecSys challenge 2020](https://www.kaggle.com/c/recommender-system-2020-challenge-polimi).
-The repo builds on the code developed by <a href="https://mauriziofd.github.io/" target="_blank">Maurizio Ferrari Dacrema</a>, PhD candidate at Politecnico di Milano. See our [website](http://recsys.deib.polimi.it/) for more information on our research group and available thesis.
-The introductory slides are available [here](slides/Introduction%20and%20Materials%20for%20RecSys%20Practice%20Sessions.pdf). 
-For Installation instructions see the following section [Installation](#Installation).
+# Recommender Systems 2020 Challenge
 
+This repo contains the code and the data used in the [Recommender Systems 2020 Challenge](https://www.kaggle.com/c/recommender-system-2020-challenge-polimi/leaderboard) @ Politecnico di Milano.<br> All the algorithms are in the [src](/src) folder and most of them are forked from the [course repository](https://github.com/MaurizioFD/RecSys_Course_AT_PoliMi), which contains basic implementations of many recommenders and utility code.
 
-#### This repository contains a Cython implementation of:
- - SLIM BPR: Item-item similarity matrix machine learning algorithm optimizing BPR.
-    Uses a Cython tree-based sparse matrix, suitable for datasets whose number of items is too big for the
-    dense similarity matrix to fit in memory. 
-    Dense similarity is also supported.
- - MF BPR: Matrix factorization optimizing BPR
- - FunkSVD: Matrix factorization optimizing RMSE
- - AsymmetricSVD
+I ended up with the following placement:
 
-#### This repo contains a Python implementation of:
- - Item-based KNN collaborative
- - Item-based KNN content
- - User-based KNN
- - PureSVD: Matrix factorization applied using the simple SVD decomposition of the URM
- - WRMF or IALS: Matrix factorization developed for implicit interactions
- - P3alpha, RP3beta: graph based algorithms modelling a random walk and representing the item-item similarity as a transition probability
- - SLIM ElasticNet Item-item similarity matrix machine learning algorithm optimizing prediction error (MSE)
- 
- 
-#### Bayesian parameter tuning:
-A simple wrapper of scikit-optimize allowing for a simple and fast parameter tuning.
-The BayesianSkoptSearch object will save the following files:
-- AlgorithmName_BayesianSkoptSearch.txt file with all the cases explored and the recommendation quality
-- _best_model file which contains the trained model and can be loaded with recommender.load_model(path_to_best_model_file)
-- _metadata file which contains a dictionary with all the explored cases, for each the fit parameters, the validation results and, if that configuration was the new best one, the test results. It also contains, for all configurations, the train, validation and test time, in seconds.
- 
-#### This repository contains the following runnable scripts
+1. **Public leaderboard:** 5/66
+2. **Private leaderboard:** 8/66
 
- - run_all_algorithms.py: Script running sequentially all available algorithms and saving the results in result_all_algorithms.txt
- - run_parameter_search.py: Script performing parameter tuning for all available algorithms. Inside all parameters are listed with some common values.
- 
+## Added functionalities
 
-#### This repository also provides an implementation of:
- 
- - Similarities: Cosine Similarity, Adjusted Cosine, Pearson Correlation, Jaccard Correlation, Tanimoto Coefficient, Dice coefficinent, Tversky coefficient, Asymmetric Cosine and Euclidean similarity: Implemented both in Python and Cython with the same interface. Base.compute_similarity chooses which to use depending on the density of the data and on whether a compiled cython version is available on your architecture and operative system. 
- - Metrics: MAP, recall (the denominator is the number of user's test items), precision_recall_min_den (the denominator is the min between the number of user's test items and the recommendation list length), precision, ROC-AUC, MRR, RR, NDCG, Hit Rate, ARHR, Novelty, Coverage, Shannon entropy, Gini Diversity, Herfindahl Diversity, Mean inter list Diversity, Feature based diversity
- - Dataset: Movielens10MReader, downloads and reads the Movielens 10M rating file, splits it into three URMs for train, test and validation and saves them for later use. 
- 
+I added a couple of changes and useful extra code:
 
-Cython code is already compiled for Linux and Windows x86 (your usual personal computer architecture) and ppc64 (IBM Power PC). To recompile the code just run the cython compilaton script as described in the installation section.
-The code has beend developed for Linux and Windows.
+1) **GPU - Cython MF_IALS:** <br> The original [MF_IALS](/MatrixFactorization/algorithm/IALSRecommender.py) algorithm was quite slow, so we implemented a faster version which leaverages on GPU using the [implicit library](https://github.com/benfred/implicit). We adapted the code provided in the implicit library to match the same interface of our course repository, thus we were able to use the already implemented evaluator, data strctures ecc... with little extra effort. The GPU implementation allowed us to move from a 10 minutes per fit to about 30 seconds per fit, which is a huge improvement in performances.
 
+2) **N score hybrid recommender**: <br> We extended the original [hybrid score recommender](/KNN/ItemKNNScoresHybridRecommender.py) (which merges only two recommenders) to an arbitrary number of number of recommender. The code can be found in [ItemKNNScoresHybridNRecommender.py](/KNN/ItemKNNScoresHybridNRecommender.py). <br> **NB:** there are other classes like [ItemKNNScoresHybrid5Recommender.py](/KNN/ItemKNNScoresHybrid5Recommender.py) which are "noise" from our various experiments. As the name suggest, this hybrid merges 5 recommenders. We higly suggest to use the generalized version [ItemKNNScoresHybridNRecommender.py](/KNN/ItemKNNScoresHybridNRecommender.py) which is simpler, cleaner and more flexible.
 
+## Best model
 
+Our best model merges three different algoritms:
+1) [MF_IALS](/MatrixFactorization/algorithm/IALSRecommender.py) 
+2) [RP3_Beta](/GraphBased/RP3betaRecommender.py) 
+3) [SLIM_ElasticNet](/SLIM_ElasticNet/SLIMElasticNetRecommender.py) 
 
-## Installation
+Each one of the above mentioned algorithms has been trained using the **Feature Merging** technique, which basically consists in merging the URM (user rating matrix) and the ICM (item content matrix) together and then training the model on this new matrix.
 
-Note that this repository requires Python 3.6
+The best models can be found in [Best Models](/Challenge_2020/Best_models), in particular the code of the above mentioned model is [MF_IALS+rp3+Slim_elasticNet_featuremerge_0.09917](/Challenge_2020/Best_models/MF_IALS+rp3+Slim_elasticNet_featuremerge_0.09917_test.ipynb). The other models in this folder, even if they have a higher test score, were achieving worse performances on the private leaderboard. 
 
-First we suggest you create an environment for this project using virtualenv (or another tool like conda)
+## Our final presentation
 
-First checkout this repository, then enter in the repository folder and run this commands to create and activate a new environment:
+[RecSys Presentation](https://github.com/mattiasu96/Recommender-Systems-Challenge/blob/main/RecSys%20Presentation.pdf) 
 
-If you are using virtualenv:
-```Python
-virtualenv -p python3 RecSysFramework
-source RecSysFramework/bin/activate
-```
-If you are using conda:
-```Python
-conda create -n RecSysFramework python=3.6 anaconda
-source activate RecSysFramework
-```
+# FAQ
+This section aims at helping future students with possible FAQ and problems we faced during the competition.
 
-Then install all the requirements and dependencies
-```Python
-pip install -r requirements.txt
-```
+1. **I don't know where to start, how I do choose my recommender/model?** <br> Unfortunately there isn't any previous knowledge that tells you for sure which recommender will be the best, you have to try and see how they behave. Based on our experience, we suggest to first try the various recommenders and look for the best ones. In our case, we noticed from the very beginning that RP3_beta and graph based algorithms worked pretty well. Once you have found your "top tier" algorithms, you can start messing around with them. You can try to merge them using scores, similarity matrices, feature merging ecc... 
 
-In order to compile you must have installed: _gcc_ and _python3 dev_, which can be installed with the following commands:
-```Python
-sudo apt install gcc 
-sudo apt-get install python3-dev
-```
+2. **Come on, is it really all trial and error?**: <br> More or less, yes, at least for the competition. Data is anonymized to avoid "cheating", so students can't just find an already existing solution and/or use extra data retrieved from the internet. However in general some "tricks" can be used. <br>In our challenge, we were given interactions with books and text tokens but, since the data are anonymized, it is impossible to perform text analysis, genre grouping, correlation between text and popularity ecc... However in real cases, these methods are commonly used. 
 
-At this point you can compile all Cython algorithms by running the following command. The script will compile within the current active environment. The code has been developed for Linux and Windows platforms. During the compilation you may see some warnings. 
- 
-```Python
-python run_compile_all_cython.py
-```
+3. **Ok, so what did you do?** <br> As I already mentioned, at the very beginning we tested all the various algorithms we studied and we found out that graph based worked pretty well. So we decided to use this one as a "baseline" and we tried different combinations. At a certain point we added a PureSVD recommender to our already existing graph based model, and we saw an incredible spike in performances. We ended up having a merge of p3alpha, rp3beta, pureSVD and userKNN for the first deadline, which was good, but not enough, it kind of overfitted. <br> During the course we were introduced to the **feature merging** technique. We tried a lot of methods to perform feature selection and analysis, without any success (and a lot of blue screens, check the performance question), however feature merging allowed us to exploit the available features in our training process. We noticed that with this technique, we greatly improved the performances of our "standalone" Rp3Beta, so we decided to apply this method also to other recommenders. We found out that MF_IALS performed really well with feature merging, and we had already noticed that graph based + matrix factorization was a pretty good combo, thus we decided to put MF_IALS together with the Rp3Beta and check if our reasoning was correct. Indeed it was! 
 
+4. **Some algorithms are almost impossible to fit, am I doing something wrong?** <br> Fortunately/unfortunately not, it is normal. Some algorithms (such as SLIM_ElasticNet, MF_IALS in the original implementation ecc...) take really A LOT of time and resources. SLIM_ElasticNet took 20 minutes per fit on a i7 3770k processor using the multithread implementation. Considering that these algorithms have to be tuned, doing just 50 trials took 50x20 minutes, which is quite a lot of time. 
 
+5. **Well, I have just i3 my laptop, how am I supposed to join this challenge??** <br> You can use online services such as Kaggle, Google Colab or Google Cloud Platform. We ended up using Google Colab scripts with an autoclicker on our mobile phone to run the code without getting disconnected for inactivity during night. Not the most beautiful solution, but you have to work with what you have ;) 
 
-## Project structure
+6. **Do you have any examples of how to set-up those platforms?** <br> Yep. Here you can find an example on Kaggle https://www.kaggle.com/mattiasurricchio/tuning-userknn-feature-merge where we tuned a UserKNN. https://www.kaggle.com/mattiasurricchio/baserecommenders this is the dataset needed to use the course code (obviously it will not be updated for future versions of the course). The main idea is to download the course repo from GitHub, zip it and then upload it as dataset. Then you will be able to use it on Kaggle. <br> The same holds for Google Colab, you can find an example here: https://colab.research.google.com/drive/1PwMkHZpCpAbCzPPgihOjdD3T1fOMHnpO?usp=sharing
 
-### Base
-Contains some basic modules and the base classes for different Recommender types.
-
-#### Base.Evaluation
-The Evaluator class is used to evaluate a recommender object. It computes various metrics:
-* Accuracy metrics: ROC_AUC, PRECISION, RECALL, MAP, MRR, NDCG, F1, HIT_RATE, ARHR
-* Beyond-accuracy metrics: NOVELTY, DIVERSITY, COVERAGE
-
-The evaluator takes as input the URM against which you want to test the recommender, then a list of cutoff values (e.g., 5, 20) and, if necessary, an object to compute diversity.
-The function evaluateRecommender will take as input only the recommender object you want to evaluate and return both a dictionary in the form {cutoff: results}, where results is {metric: value} and a well-formatted printable string.
-
-```python
-
-    from Base.Evaluation.Evaluator import EvaluatorHoldout
-
-    evaluator_test = EvaluatorHoldout(URM_test, [5, 20])
-
-    results_run_dict, results_run_string = evaluator_test.evaluateRecommender(recommender_instance)
-
-    print(results_run_string)
-
-```
-
-
-#### Base.Similarity
-The similarity module allows to compute the item-item or user-user similarity.
-It is used by calling the Compute_Similarity class and passing which is the desired similarity and the sparse matrix you wish to use.
-
-It is able to compute the following similarities: Cosine, Adjusted Cosine, Jaccard, Tanimoto, Pearson and Euclidean (linear and exponential)
-
-```python
-
-    similarity = Compute_Similarity(URM_train, shrink=shrink, topK=topK, normalize=normalize, similarity = "cosine")
-
-    W_sparse = similarity.compute_similarity()
-
-```
-
-
-### Recommenders
-All recommenders inherit from BaseRecommender, therefore have the same interface.
-You must provide the data when instantiating the recommender and then call the _fit_ function to build the corresponding model.
-
-Each recommender has a _compute_item_score function which, given an array of user_id, computes the prediction or _score_ for all items.
-Further operations like removing seen items and computing the recommendation list of the desired length are done by the _recommend_ function of BaseRecommender
-
-As an example:
-
-```python
-    user_id = 158
-    
-    recommender_instance = ItemKNNCFRecommender(URM_train)
-    recommender_instance.fit(topK=150)
-    recommended_items = recommender_instance.recommend(user_id, cutoff = 20, remove_seen_flag=True)
-    
-    recommender_instance = SLIM_ElasticNet(URM_train)
-    recommender_instance.fit(topK=150, l1_ratio=0.1, alpha = 1.0)
-    recommended_items = recommender_instance.recommend(user_id, cutoff = 20, remove_seen_flag=True)
-    
-```
-
-### Data Reader and splitter
-DataReader objects read the dataset from its original file and save it as a sparse matrix.
-
-DataSplitter objects take as input a DataReader and split the corresponding dataset in the chosen way.
-At each step the data is automatically saved in a folder, though it is possible to prevent this by setting _save_folder_path = False_ when calling _load_data_.
-If a DataReader or DataSplitter is called for a dataset which was already processed, the saved data is loaded.
-
-DataPostprocessing can also be applied between the dataReader and the dataSplitter and nested in one another.
-
-When you have bilt the desired combination of dataset/preprocessing/split, get the data calling _load_data_.
-
-```python
-dataset = Movielens1MReader()
-
-dataset = DataPostprocessing_K_Cores(dataset, k_cores_value=25)
-dataset = DataPostprocessing_User_sample(dataset, user_quota=0.3)
-dataset = DataPostprocessing_Implicit_URM(dataset)
-
-dataSplitter = DataSplitter_leave_k_out(dataset)
-
-dataSplitter.load_data()
-
-URM_train, URM_validation, URM_test = dataSplitter.get_holdout_split()
+7. **Can I write you?** <br> Sure. You can open an issue on GitHub, write us on LinkedIn (https://www.linkedin.com/in/mattiasurricchio/ https://www.linkedin.com/in/arcangelo-pisa-8166a366/) or ask on the Telegram group of the course (we will probably be there for a while). Feel free to contact us, we don't bite :) 
