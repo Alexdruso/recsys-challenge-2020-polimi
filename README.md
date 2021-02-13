@@ -28,7 +28,7 @@ The resulting merged hybrid has been tuned both on the whole dataset and on the 
 
 ## My final presentation
 
-[RecSys Presentation](/RecSys presentation.pdf) 
+[RecSys Presentation](/RecSys%presentation.pdf) 
 
 # FAQ
 This section aims at helping future students with possible FAQ and problems we faced during the competition.
