@@ -45,4 +45,4 @@ This section aims at helping future students with possible FAQ and problems we f
 
 7. **Can I write you?** <br> Sure. You can open an issue on GitHub, write me on [LinkedIn](https://www.linkedin.com/in/alessandro-sanvito/) or ask on Telegram (@alexduso). Feel free to contact me, I don't bite :) 
 
-Credits: credits to Maurizio Ferrari Dacrema and prof. Paolo Cremonesi for the support in the challenge and thanks to Mattia Suricchio for the beautiful README template.
+Credits: thanks to Maurizio Ferrari Dacrema and prof. Paolo Cremonesi for the support in the challenge and thanks to Mattia Suricchio for the beautiful README template.
